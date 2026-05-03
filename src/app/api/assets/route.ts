@@ -57,8 +57,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "账户不存在" }, { status: 404 })
     }
 
-    const asset = await prisma.asset.create({
-      data: {
+    // 使用 upsert 处理唯一约束：如果当天已有记录则更新，否则创建
+    const asset = await prisma.asset.upsert({
+      where: {
+        accountId_date: {
+          accountId: data.accountId,
+          date: new Date(data.date),
+        },
+      },
+      update: {
+        amount: data.amount,
+        currency: data.currency,
+        note: data.note,
+      },
+      create: {
         accountId: data.accountId,
         userId: session.user.id,
         date: new Date(data.date),
@@ -69,7 +81,8 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(asset)
-  } catch {
+  } catch (err) {
+    console.error("创建资产记录失败:", err)
     return NextResponse.json(
       { error: "创建资产记录失败" },
       { status: 500 }

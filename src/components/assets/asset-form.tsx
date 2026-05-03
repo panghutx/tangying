@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { assetSchema, AssetInput } from "@/lib/validations/asset"
+import { getSupportedCurrencies } from "@/lib/services/exchange-rate"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,6 +36,8 @@ interface AssetFormProps {
   accounts: Account[]
 }
 
+const currencies = getSupportedCurrencies()
+
 export function AssetForm({ initialData, accounts }: AssetFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -60,6 +63,7 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
   })
 
   const accountId = watch("accountId")
+  const currency = watch("currency")
 
   useEffect(() => {
     if (accounts.length > 0 && !accountId) {
@@ -149,26 +153,42 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">金额</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              {...register("amount", { valueAsNumber: true })}
-              placeholder="资产总额"
-            />
-            {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount.message}</p>
-            )}
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">金额</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                {...register("amount", { valueAsNumber: true })}
+                placeholder="资产总额"
+              />
+              {errors.amount && (
+                <p className="text-sm text-red-500">{errors.amount.message}</p>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="currency">币种</Label>
-            <Input id="currency" {...register("currency")} placeholder="CNY" />
-            {errors.currency && (
-              <p className="text-sm text-red-500">{errors.currency.message}</p>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="currency">币种</Label>
+              <Select
+                value={currency}
+                onValueChange={(value) => setValue("currency", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择币种" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} {c.name} ({c.code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.currency && (
+                <p className="text-sm text-red-500">{errors.currency.message}</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
