@@ -27,7 +27,7 @@ export async function GET(
     }
 
     return NextResponse.json(account)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "获取账户失败" },
       { status: 500 }
@@ -59,7 +59,7 @@ export async function PUT(
     })
 
     return NextResponse.json(account)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "更新账户失败" },
       { status: 500 }
@@ -87,7 +87,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "删除账户失败" },
       { status: 500 }

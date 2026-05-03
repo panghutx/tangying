@@ -30,7 +30,7 @@ export async function GET(
     }
 
     return NextResponse.json(asset)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "获取资产记录失败" },
       { status: 500 }
@@ -53,23 +53,22 @@ export async function PUT(
     const body = await request.json()
     const data = updateAssetSchema.parse(body)
 
-    const updateData: any = {}
-    if (data.accountId) updateData.accountId = data.accountId
-    if (data.date) updateData.date = new Date(data.date)
-    if (data.amount !== undefined) updateData.amount = data.amount
-    if (data.currency) updateData.currency = data.currency
-    if (data.note !== undefined) updateData.note = data.note
-
     const asset = await prisma.asset.update({
       where: {
         id,
         userId: session.user.id,
       },
-      data: updateData,
+      data: {
+        accountId: data.accountId,
+        date: data.date ? new Date(data.date) : undefined,
+        amount: data.amount,
+        currency: data.currency,
+        note: data.note,
+      },
     })
 
     return NextResponse.json(asset)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "更新资产记录失败" },
       { status: 500 }
@@ -97,7 +96,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "删除资产记录失败" },
       { status: 500 }

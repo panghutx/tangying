@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { updateIncomeSchema } from "@/lib/validations/income"
+import { IncomeType } from "@prisma/client"
 
 export async function GET(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
     }
 
     return NextResponse.json(income)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "获取收益记录失败" },
       { status: 500 }
@@ -53,23 +54,22 @@ export async function PUT(
     const body = await request.json()
     const data = updateIncomeSchema.parse(body)
 
-    const updateData: any = {}
-    if (data.accountId) updateData.accountId = data.accountId
-    if (data.date) updateData.date = new Date(data.date)
-    if (data.amount !== undefined) updateData.amount = data.amount
-    if (data.type) updateData.type = data.type
-    if (data.note !== undefined) updateData.note = data.note
-
     const income = await prisma.income.update({
       where: {
         id,
         userId: session.user.id,
       },
-      data: updateData,
+      data: {
+        accountId: data.accountId,
+        date: data.date ? new Date(data.date) : undefined,
+        amount: data.amount,
+        type: data.type as IncomeType,
+        note: data.note,
+      },
     })
 
     return NextResponse.json(income)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "更新收益记录失败" },
       { status: 500 }
@@ -97,7 +97,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "删除收益记录失败" },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default auth((req: any) => {
   if (!req.auth) {
     const url = new URL("/login", req.url)

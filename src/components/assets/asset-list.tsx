@@ -20,8 +20,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+interface Asset {
+  id: string
+  date: Date
+  amount: { toNumber: () => number } | number
+  currency: string
+  note: string | null
+  account: {
+    name: string
+    platform: string
+  }
+}
+
 interface AssetListProps {
-  assets: any[]
+  assets: Asset[]
 }
 
 export function AssetList({ assets }: AssetListProps) {
@@ -47,14 +59,15 @@ export function AssetList({ assets }: AssetListProps) {
     }
   }
 
-  const formatAmount = (amount: any, currency: string) => {
+  const formatAmount = (amount: { toNumber: () => number } | number, currency: string) => {
+    const num = typeof amount === "number" ? amount : amount.toNumber()
     return new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency,
-    }).format(Number(amount))
+    }).format(num)
   }
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("zh-CN")
   }
 
@@ -80,7 +93,7 @@ export function AssetList({ assets }: AssetListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {assets.map((asset: any) => (
+            {assets.map((asset) => (
               <TableRow key={asset.id}>
                 <TableCell>{formatDate(asset.date)}</TableCell>
                 <TableCell>

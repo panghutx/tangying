@@ -27,8 +27,20 @@ const typeLabels: Record<string, string> = {
   FEE: "手续费",
 }
 
+interface Income {
+  id: string
+  date: Date
+  amount: { toNumber: () => number } | number
+  type: "PROFIT" | "DIVIDEND" | "INTEREST" | "FEE"
+  note: string | null
+  account: {
+    name: string
+    platform: string
+  }
+}
+
 interface IncomeListProps {
-  incomes: any[]
+  incomes: Income[]
 }
 
 export function IncomeList({ incomes }: IncomeListProps) {
@@ -54,8 +66,8 @@ export function IncomeList({ incomes }: IncomeListProps) {
     }
   }
 
-  const formatAmount = (amount: any) => {
-    const num = Number(amount)
+  const formatAmount = (amount: { toNumber: () => number } | number) => {
+    const num = typeof amount === "number" ? amount : amount.toNumber()
     const formatted = new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency: "CNY",
@@ -63,7 +75,7 @@ export function IncomeList({ incomes }: IncomeListProps) {
     return num >= 0 ? `+${formatted}` : `-${formatted}`
   }
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("zh-CN")
   }
 
@@ -90,7 +102,7 @@ export function IncomeList({ incomes }: IncomeListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {incomes.map((income: any) => (
+            {incomes.map((income) => (
               <TableRow key={income.id}>
                 <TableCell>{formatDate(income.date)}</TableCell>
                 <TableCell>

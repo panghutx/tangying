@@ -60,7 +60,7 @@ export function RegisterForm() {
 
       // Registration successful, redirect to login
       router.push("/login?registered=true")
-    } catch (err) {
+    } catch {
       setError("网络错误，请稍后重试")
     } finally {
       setIsLoading(false)

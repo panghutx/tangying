@@ -22,7 +22,7 @@ export async function GET() {
     })
 
     return NextResponse.json(accounts)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "获取账户列表失败" },
       { status: 500 }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(account)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "创建账户失败" },
       { status: 500 }

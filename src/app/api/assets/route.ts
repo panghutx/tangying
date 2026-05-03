@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get("accountId")
 
-    const where: any = { userId: session.user.id }
+    const where: { userId: string; accountId?: string } = { userId: session.user.id }
     if (accountId) {
       where.accountId = accountId
     }
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(assets)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "获取资产记录失败" },
       { status: 500 }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(asset)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "创建资产记录失败" },
       { status: 500 }
