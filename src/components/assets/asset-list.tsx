@@ -22,8 +22,8 @@ import {
 
 interface Asset {
   id: string
-  date: Date
-  amount: { toNumber: () => number } | number
+  date: string
+  amount: number
   currency: string
   note: string | null
   account: {
@@ -59,15 +59,14 @@ export function AssetList({ assets }: AssetListProps) {
     }
   }
 
-  const formatAmount = (amount: { toNumber: () => number } | number, currency: string) => {
-    const num = typeof amount === "number" ? amount : amount.toNumber()
+  const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency,
-    }).format(num)
+    }).format(amount)
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("zh-CN")
   }
 

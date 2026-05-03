@@ -16,6 +16,13 @@ export default async function AssetsPage() {
     },
   })
 
+  // 将 Decimal 转换为普通数字
+  const serializedAssets = assets.map((asset) => ({
+    ...asset,
+    amount: Number(asset.amount),
+    date: asset.date.toISOString(),
+  }))
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,7 +32,7 @@ export default async function AssetsPage() {
         </Link>
       </div>
 
-      <AssetList assets={assets} />
+      <AssetList assets={serializedAssets} />
     </div>
   )
 }

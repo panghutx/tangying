@@ -16,6 +16,13 @@ export default async function IncomesPage() {
     },
   })
 
+  // 将 Decimal 转换为普通数字
+  const serializedIncomes = incomes.map((income) => ({
+    ...income,
+    amount: Number(income.amount),
+    date: income.date.toISOString(),
+  }))
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,7 +32,7 @@ export default async function IncomesPage() {
         </Link>
       </div>
 
-      <IncomeList incomes={incomes} />
+      <IncomeList incomes={serializedIncomes} />
     </div>
   )
 }

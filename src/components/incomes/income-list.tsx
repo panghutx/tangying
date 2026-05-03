@@ -29,8 +29,8 @@ const typeLabels: Record<string, string> = {
 
 interface Income {
   id: string
-  date: Date
-  amount: { toNumber: () => number } | number
+  date: string
+  amount: number
   type: "PROFIT" | "DIVIDEND" | "INTEREST" | "FEE"
   note: string | null
   account: {
@@ -66,16 +66,15 @@ export function IncomeList({ incomes }: IncomeListProps) {
     }
   }
 
-  const formatAmount = (amount: { toNumber: () => number } | number) => {
-    const num = typeof amount === "number" ? amount : amount.toNumber()
+  const formatAmount = (amount: number) => {
     const formatted = new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency: "CNY",
-    }).format(Math.abs(num))
-    return num >= 0 ? `+${formatted}` : `-${formatted}`
+    }).format(Math.abs(amount))
+    return amount >= 0 ? `+${formatted}` : `-${formatted}`
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("zh-CN")
   }
 
@@ -111,7 +110,7 @@ export function IncomeList({ incomes }: IncomeListProps) {
                 <TableCell>{typeLabels[income.type]}</TableCell>
                 <TableCell
                   className={`font-medium ${
-                    Number(income.amount) >= 0 ? "text-green-600" : "text-red-600"
+                    income.amount >= 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
                   {formatAmount(income.amount)}
