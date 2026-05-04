@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
+import { SidebarProvider } from "@/contexts/sidebar-context"
 
 export default async function DashboardLayout({
   children,
@@ -15,12 +16,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen">
-      <Sidebar />
-      <div className="ml-64">
-        <Header />
-        <main className="p-6">{children}</main>
+    <SidebarProvider>
+      <div className="min-h-screen">
+        <Sidebar />
+        <div className="md:ml-64">
+          <Header />
+          <main className="p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   )
 }
