@@ -21,6 +21,7 @@ interface Account {
   id: string
   name: string
   platform: string
+  currency: string
 }
 
 interface IncomeFormProps {
@@ -69,6 +70,7 @@ export function IncomeForm({ initialData, accounts }: IncomeFormProps) {
 
   const accountId = watch("accountId")
   const type = watch("type")
+  const selectedAccount = accounts.find((a) => a.id === accountId)
 
   const onSubmit = async (data: IncomeInput) => {
     setIsLoading(true)
@@ -142,7 +144,7 @@ export function IncomeForm({ initialData, accounts }: IncomeFormProps) {
               <SelectContent>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
-                    {account.name} ({account.platform})
+                    {account.name} ({account.platform}) - {account.currency}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -161,7 +163,7 @@ export function IncomeForm({ initialData, accounts }: IncomeFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">金额</Label>
+            <Label htmlFor="amount">金额 ({selectedAccount?.currency || "CNY"})</Label>
             <Input
               id="amount"
               type="number"
