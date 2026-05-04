@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/contexts/sidebar-context"
 
 export function Header() {
-  const { toggle } = useSidebar()
+  const { isOpen, toggle } = useSidebar()
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-white px-6">
@@ -15,7 +15,8 @@ export function Header() {
         size="icon"
         className="md:hidden"
         onClick={toggle}
-        aria-label="打开菜单"
+        aria-label={isOpen ? "关闭菜单" : "打开菜单"}
+        aria-expanded={isOpen}
       >
         <Menu className="h-5 w-5" />
       </Button>
