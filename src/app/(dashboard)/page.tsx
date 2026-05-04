@@ -7,6 +7,7 @@ import { AssetByCurrencyChart } from "@/components/charts/asset-by-currency-char
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { getExchangeRates, convertCurrency } from "@/lib/services/exchange-rate"
+import { calculateAllProfits, getTotalProfitCNY } from "@/lib/services/profit"
 
 export default async function HomePage() {
   const session = await auth()
@@ -176,6 +177,10 @@ export default async function HomePage() {
     _sum: { amount: true },
   })
 
+  // 获取本月收益统计
+  const monthProfits = await calculateAllProfits(userId, "month")
+  const monthProfitCNY = await getTotalProfitCNY(monthProfits)
+
   // 格式化货币
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("zh-CN", {
@@ -195,7 +200,7 @@ export default async function HomePage() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
@@ -273,6 +278,29 @@ export default async function HomePage() {
             >
               {formatCurrency(Number(totalIncome._sum.amount || 0))}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              本月收益
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${
+                monthProfitCNY >= 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {monthProfitCNY >= 0 ? "+" : ""}
+              {formatCurrency(Math.abs(monthProfitCNY))}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              <Link href="/reports" className="hover:underline">
+                查看详情 →
+              </Link>
+            </p>
           </CardContent>
         </Card>
       </div>
