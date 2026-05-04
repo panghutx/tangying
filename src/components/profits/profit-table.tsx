@@ -56,11 +56,20 @@ export function ProfitTable({ profits }: ProfitTableProps) {
           {profits.map((profit) => (
             <tr key={profit.accountId} className="border-b last:border-0">
               <td className="p-3">
-                <div className="font-medium">{profit.accountName}</div>
+                <div className="font-medium">
+                  {profit.accountName}
+                  {!profit.hasValidData && (
+                    <span className="ml-2 text-xs text-orange-500">(缺期初数据)</span>
+                  )}
+                </div>
                 <div className="text-xs text-gray-500">{profit.currency}</div>
               </td>
               <td className="p-3 text-right">
-                {formatCurrency(profit.startAsset, profit.currency)}
+                {profit.hasValidData ? (
+                  formatCurrency(profit.startAsset, profit.currency)
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
               </td>
               <td className="p-3 text-right">
                 {formatCurrency(profit.endAsset, profit.currency)}

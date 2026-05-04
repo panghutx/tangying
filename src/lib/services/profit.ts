@@ -18,6 +18,7 @@ export interface ProfitResult {
   netInflow: number
   realProfit: number
   profitRate: number
+  hasValidData: boolean  // 是否有有效的期初数据
 }
 
 export type PeriodType = "today" | "week" | "month" | "year" | "all" | "custom"
@@ -81,6 +82,9 @@ export async function calculateAccountProfit(
     orderBy: { date: "desc" },
   })
 
+  // 如果没有期末资产记录，说明这个账户没有数据，返回 null
+  if (!endAsset) return null
+
   // 获取期间的流水汇总
   const transactions = await prisma.transaction.groupBy({
     by: ["type"],
@@ -116,8 +120,25 @@ export async function calculateAccountProfit(
   const endAmount = Number(endAsset?.amount || 0)
   const assetChange = endAmount - startAmount
 
+  // 判断是否有有效的期初数据
+  // 如果没有期初记录，但有期末记录，说明这是新账户，收益计算可能不准确
+  const hasValidData = startAsset !== null
+
   // 真实收益 = 资产变动 - 净流入
-  const realProfit = assetChange - netInflow
+  // 如果没有有效的期初数据，需要特殊处理
+  let realProfit: number
+  if (hasValidData) {
+    realProfit = assetChange - netInflow
+  } else {
+    // 没有期初数据时，如果期间有存款/转入，收益 = 期末资产 - 净流入
+    // 如果期间没有流水，无法计算收益，设为 0
+    if (netInflow !== 0) {
+      realProfit = endAmount - netInflow
+    } else {
+      // 没有期初数据，也没有流水，无法确定收益来源
+      realProfit = 0
+    }
+  }
 
   // 收益率
   const profitRate = startAmount > 0 ? (realProfit / startAmount) * 100 : 0
@@ -139,6 +160,7 @@ export async function calculateAccountProfit(
     netInflow,
     realProfit,
     profitRate,
+    hasValidData,
   }
 }
 

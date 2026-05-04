@@ -6,18 +6,118 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id           String             @id @default(cuid())
+  email        String             @unique
+  passwordHash String?
+  name         String?
+  image        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  assets       Asset[]
+  accounts     FinancialAccount[]
+  incomes      Income[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model FinancialAccount {
+  id                  String        @id @default(cuid())
+  userId              String
+  name                String
+  type                AccountType
+  platform            String
+  credentials         String?
+  currency            String        @default("CNY")
+  isActive            Boolean       @default(true)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  assets              Asset[]
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomes             Income[]
+  syncLogs            SyncLog[]
+  transactions        Transaction[]
+  relatedTransactions Transaction[] @relation("TransferRelation")
+
+  @@map("financial_accounts")
+}
+
+model Asset {
+  id        String           @id @default(cuid())
+  accountId String
+  userId    String
+  date      DateTime         @db.Date
+  amount    Decimal          @db.Decimal(15, 2)
+  currency  String           @default("CNY")
+  note      String?
+  createdAt DateTime         @default(now())
+  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, date])
+  @@map("assets")
+}
+
+model Income {
+  id        String           @id @default(cuid())
+  accountId String
+  userId    String
+  date      DateTime         @db.Date
+  amount    Decimal          @db.Decimal(15, 2)
+  type      IncomeType
+  note      String?
+  createdAt DateTime         @default(now())
+  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("incomes")
+}
+
+model SyncLog {
+  id        String           @id @default(cuid())
+  accountId String
+  status    SyncStatus
+  message   String?
+  syncedAt  DateTime         @default(now())
+  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("sync_logs")
+}
+
+model Transaction {
+  id               String            @id @default(cuid())
+  accountId        String
+  userId           String
+  date             DateTime          @db.Date
+  amount           Decimal           @db.Decimal(15, 2)
+  type             TransactionType
+  category         String?
+  note             String?
+  relatedAccountId String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  account          FinancialAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  relatedAccount   FinancialAccount? @relation("TransferRelation", fields: [relatedAccountId], references: [id])
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, date])
+  @@index([userId, date])
+  @@map("transactions")
+}
+
 enum AccountType {
-  DOMESTIC    // 国内平台
-  BANK        // 银行理财
-  BROKERAGE   // 券商
-  OVERSEAS    // 海外平台
+  DOMESTIC
+  BANK
+  BROKERAGE
+  OVERSEAS
 }
 
 enum IncomeType {
-  PROFIT      // 收益
-  DIVIDEND    // 分红
-  INTEREST    // 利息
-  FEE         // 手续费
+  PROFIT
+  DIVIDEND
+  INTEREST
+  FEE
 }
 
 enum SyncStatus {
@@ -27,115 +127,9 @@ enum SyncStatus {
 }
 
 enum TransactionType {
-  INCOME       // 收益入账
-  DEPOSIT      // 资金存入
-  WITHDRAW     // 资金取出
-  TRANSFER_IN  // 转账转入
-  TRANSFER_OUT // 转账转出
-}
-
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?
-  name         String?
-  image        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  accounts     FinancialAccount[]
-  assets       Asset[]
-  incomes      Income[]
-  transactions Transaction[]
-
-  @@map("users")
-}
-
-model FinancialAccount {
-  id          String      @id @default(cuid())
-  userId      String
-  name        String
-  type        AccountType
-  platform    String
-  credentials String?    // AES 加密存储
-  currency    String      @default("CNY")
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assets      Asset[]
-  incomes     Income[]
-  syncLogs    SyncLog[]
-  transactions Transaction[]
-  relatedTransactions Transaction[] @relation("TransferRelation")
-
-  @@map("financial_accounts")
-}
-
-model Asset {
-  id        String   @id @default(cuid())
-  accountId String
-  userId    String
-  date      DateTime @db.Date
-  amount    Decimal  @db.Decimal(15, 2)
-  currency  String   @default("CNY")
-  note      String?
-  createdAt DateTime @default(now())
-
-  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([accountId, date])
-  @@map("assets")
-}
-
-model Income {
-  id        String     @id @default(cuid())
-  accountId String
-  userId    String
-  date      DateTime   @db.Date
-  amount    Decimal    @db.Decimal(15, 2)
-  type      IncomeType
-  note      String?
-  createdAt DateTime   @default(now())
-
-  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("incomes")
-}
-
-model SyncLog {
-  id        String     @id @default(cuid())
-  accountId String
-  status    SyncStatus
-  message   String?
-  syncedAt  DateTime   @default(now())
-
-  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  @@map("sync_logs")
-}
-
-model Transaction {
-  id               String           @id @default(cuid())
-  accountId        String
-  userId           String
-  date             DateTime         @db.Date
-  amount           Decimal          @db.Decimal(15, 2)
-  type             TransactionType
-  category         String?
-  note             String?
-  relatedAccountId String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  account          FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relatedAccount   FinancialAccount? @relation("TransferRelation", fields: [relatedAccountId], references: [id], onDelete: SetNull)
-
-  @@index([accountId, date])
-  @@index([userId, date])
-  @@map("transactions")
+  INCOME
+  DEPOSIT
+  WITHDRAW
+  TRANSFER_IN
+  TRANSFER_OUT
 }
