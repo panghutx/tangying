@@ -28,8 +28,8 @@ export function ProfitTable({ profits }: ProfitTableProps) {
   }
 
   return (
-    <div className="rounded-lg border">
-      <table className="w-full">
+    <div className="overflow-x-auto rounded-lg border">
+      <table className="w-full min-w-[900px]">
         <thead>
           <tr className="border-b bg-gray-50">
             <th className="p-3 text-left text-sm font-medium text-gray-500">
