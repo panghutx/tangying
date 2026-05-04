@@ -171,11 +171,22 @@ export default async function HomePage() {
     return { date: dateStr, total }
   })
 
-  // 获取收益记录统计
-  const totalIncome = await prisma.income.aggregate({
+  // 获取收益记录统计（需要按币种转换后汇总）
+  const incomes = await prisma.income.findMany({
     where: { userId },
-    _sum: { amount: true },
+    include: {
+      account: {
+        select: { currency: true },
+      },
+    },
   })
+
+  // 按账户货币转换后汇总
+  const totalIncomeCNY = incomes.reduce((sum, income) => {
+    const currency = income.account.currency
+    const rate = exchangeRates[currency] || 1
+    return sum + Number(income.amount) * rate
+  }, 0)
 
   // 获取本月收益统计
   const monthProfits = await calculateAllProfits(userId, "month")
@@ -271,12 +282,10 @@ export default async function HomePage() {
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                Number(totalIncome._sum.amount || 0) >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
+                totalIncomeCNY >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
-              {formatCurrency(Number(totalIncome._sum.amount || 0))}
+              {formatCurrency(totalIncomeCNY)}
             </div>
           </CardContent>
         </Card>
