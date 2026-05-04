@@ -27,14 +27,9 @@ export default async function EditAssetPage({
       userId: session?.user?.id,
       OR: [{ isActive: true }, { id: asset.accountId }],
     },
-    select: { id: true, name: true, platform: true },
+    select: { id: true, name: true, platform: true, currency: true },
     orderBy: { name: "asc" },
   })
-
-  console.log("Asset:", JSON.stringify(asset, null, 2))
-  console.log("Asset accountId:", asset.accountId)
-  console.log("Accounts:", JSON.stringify(accounts, null, 2))
-  console.log("Match found:", accounts.find(a => a.id === asset.accountId))
 
   return (
     <div className="space-y-6">
