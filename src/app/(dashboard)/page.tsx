@@ -84,7 +84,7 @@ export default async function HomePage() {
   )
 
   // 获取所有涉及的币种
-  const currencies = [...new Set(latestAssetsRaw.map((a: { currency: string }) => a.currency))]
+  const currencies = [...new Set(latestAssetsRaw.map((a: { currency: string }) => a.currency))] as string[]
   const exchangeRates = await getExchangeRates(currencies, "CNY")
 
   // 计算当前总资产（换算成人民币）
