@@ -59,7 +59,7 @@ export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyPro
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number) => formatCurrency(value)}
+              formatter={(value) => formatCurrency(Number(value))}
               contentStyle={{
                 backgroundColor: "white",
                 border: "1px solid #e5e7eb",

@@ -31,6 +31,7 @@ interface AccountFormProps {
     type: "DOMESTIC" | "BANK" | "BROKERAGE" | "OVERSEAS"
     platform: string
     currency: string
+    isActive?: boolean
   }
 }
 

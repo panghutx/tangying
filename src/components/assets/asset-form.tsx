@@ -173,7 +173,7 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
               <Label htmlFor="currency">币种</Label>
               <Select
                 value={currency}
-                onValueChange={(value) => setValue("currency", value)}
+                onValueChange={(value) => setValue("currency", value as string)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="选择币种" />

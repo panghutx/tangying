@@ -128,7 +128,7 @@ export function TransactionForm({ initialData, accounts }: TransactionFormProps)
             <Label htmlFor="accountId">账户</Label>
             <Select
               value={accountId}
-              onValueChange={(value) => setValue("accountId", value)}
+              onValueChange={(value) => value && setValue("accountId", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="选择账户" />

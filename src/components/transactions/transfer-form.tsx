@@ -102,7 +102,7 @@ export function TransferForm({ accounts }: TransferFormProps) {
             <Label htmlFor="fromAccountId">转出账户</Label>
             <Select
               value={fromAccountId}
-              onValueChange={(value) => setValue("fromAccountId", value)}
+              onValueChange={(value) => value && setValue("fromAccountId", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="选择转出账户" />
@@ -126,7 +126,7 @@ export function TransferForm({ accounts }: TransferFormProps) {
             <Label htmlFor="toAccountId">转入账户</Label>
             <Select
               value={toAccountId}
-              onValueChange={(value) => setValue("toAccountId", value)}
+              onValueChange={(value) => value && setValue("toAccountId", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="选择转入账户" />

@@ -95,7 +95,7 @@ export function AssetTrendChart({ data }: AssetTrendChartProps) {
               width={80}
             />
             <Tooltip
-              formatter={(value: number) => [formatCurrency(value), "总资产"]}
+              formatter={(value) => [formatCurrency(Number(value)), "总资产"]}
               labelFormatter={(label) => `日期: ${label}`}
               contentStyle={{
                 backgroundColor: "white",

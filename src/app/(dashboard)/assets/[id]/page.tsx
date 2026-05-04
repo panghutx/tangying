@@ -46,7 +46,7 @@ export default async function EditAssetPage({
           date: asset.date.toISOString(),
           amount: Number(asset.amount),
           currency: asset.currency,
-          note: asset.note,
+          note: asset.note || undefined,
         }}
         accounts={accounts}
       />

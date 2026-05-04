@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { transactionSchema } from "@/lib/validations/transaction"
+import { TransactionType } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,12 +21,14 @@ export async function GET(request: NextRequest) {
     const where: {
       userId: string
       accountId?: string
-      type?: string
+      type?: TransactionType
       date?: { gte?: Date; lte?: Date }
     } = { userId: session.user.id }
 
     if (accountId) where.accountId = accountId
-    if (type) where.type = type
+    if (type && ["INCOME", "DEPOSIT", "WITHDRAW", "TRANSFER_IN", "TRANSFER_OUT"].includes(type)) {
+      where.type = type as TransactionType
+    }
     if (startDate || endDate) {
       where.date = {}
       if (startDate) where.date.gte = new Date(startDate)

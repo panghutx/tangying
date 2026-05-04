@@ -39,7 +39,7 @@ export default async function EditIncomePage({
           date: income.date.toISOString(),
           amount: Number(income.amount),
           type: income.type,
-          note: income.note,
+          note: income.note || undefined,
         }}
         accounts={accounts}
       />

@@ -31,9 +31,11 @@ export function ProfitCard({
 }: ProfitCardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState(period)
 
-  const handlePeriodChange = (value: string) => {
-    setSelectedPeriod(value)
-    onPeriodChange(value)
+  const handlePeriodChange = (value: string | null) => {
+    if (value) {
+      setSelectedPeriod(value)
+      onPeriodChange(value)
+    }
   }
 
   const formatCurrency = (amount: number) => {

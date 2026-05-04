@@ -76,13 +76,13 @@ export async function PUT(
     if (data.date) updateData.date = new Date(data.date)
     if (data.amount !== undefined) updateData.amount = data.amount
     if (data.type) updateData.type = data.type
-    if (data.category !== undefined) updateData.category = data.category
-    if (data.note !== undefined) updateData.note = data.note
-    if (data.relatedAccountId !== undefined) updateData.relatedAccountId = data.relatedAccountId
+    if (data.category !== undefined) updateData.category = data.category || null
+    if (data.note !== undefined) updateData.note = data.note || null
+    if (data.relatedAccountId !== undefined) updateData.relatedAccountId = data.relatedAccountId || null
 
     const transaction = await prisma.transaction.update({
       where: { id },
-      data: updateData,
+      data: updateData as any,
     })
 
     return NextResponse.json({
