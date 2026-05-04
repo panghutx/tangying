@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { getExchangeRate } from "./exchange-rate"
+import { getExchangeRates } from "./exchange-rate"
 
 export interface ProfitResult {
   accountId: string
@@ -14,6 +14,7 @@ export interface ProfitResult {
   totalWithdraw: number
   totalTransferIn: number
   totalTransferOut: number
+  totalIncome: number
   netInflow: number
   realProfit: number
   profitRate: number
@@ -44,8 +45,12 @@ export function getDateRange(period: PeriodType, customStart?: Date, customEnd?:
     case "all": {
       return { start: new Date("1970-01-01"), end: now }
     }
-    case "custom":
+    case "custom": {
+      if (customStart && customEnd && customStart > customEnd) {
+        throw new Error("customStart must be before or equal to customEnd")
+      }
       return { start: customStart || today, end: customEnd || now }
+    }
     default:
       return { start: today, end: now }
   }
@@ -130,6 +135,7 @@ export async function calculateAccountProfit(
     totalWithdraw: totals.WITHDRAW,
     totalTransferIn: totals.TRANSFER_IN,
     totalTransferOut: totals.TRANSFER_OUT,
+    totalIncome: totals.INCOME,
     netInflow,
     realProfit,
     profitRate,
@@ -164,12 +170,13 @@ export async function calculateAllProfits(
 export async function getTotalProfitCNY(
   profits: ProfitResult[]
 ): Promise<number> {
-  let total = 0
+  if (profits.length === 0) return 0
 
-  for (const profit of profits) {
-    const rate = await getExchangeRate(profit.currency, "CNY")
-    total += profit.realProfit * rate
-  }
+  const currencies = [...new Set(profits.map((p) => p.currency))]
+  const rates = await getExchangeRates(currencies, "CNY")
 
-  return total
+  return profits.reduce((total, profit) => {
+    const rate = rates[profit.currency] || 1
+    return total + profit.realProfit * rate
+  }, 0)
 }
