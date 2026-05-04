@@ -88,13 +88,13 @@ export default async function HomePage() {
   const exchangeRates = await getExchangeRates(currencies, "CNY")
 
   // 计算当前总资产（换算成人民币）
-  const currentTotalCNY = latestAssetsRaw.reduce((sum, asset) => {
+  const currentTotalCNY = latestAssetsRaw.reduce((sum: number, asset: { currency: string; amount: bigint }) => {
     const rate = exchangeRates[asset.currency] || 1
     return sum + Number(asset.amount) * rate
   }, 0)
 
   // 计算上一个日期的总资产（每个账户的上一次记录）
-  const previousTotalCNY = latestAssetsRaw.reduce((sum, asset) => {
+  const previousTotalCNY = latestAssetsRaw.reduce((sum: number, asset: { accountId: string }) => {
     const prevAsset = previousAssetsMap.get(asset.accountId)
     if (!prevAsset) return sum
     const rate = exchangeRates[prevAsset.currency] || 1
