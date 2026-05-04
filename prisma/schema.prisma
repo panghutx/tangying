@@ -26,6 +26,14 @@ enum SyncStatus {
   PENDING
 }
 
+enum TransactionType {
+  INCOME       // 收益入账
+  DEPOSIT      // 资金存入
+  WITHDRAW     // 资金取出
+  TRANSFER_IN  // 转账转入
+  TRANSFER_OUT // 转账转出
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -38,6 +46,7 @@ model User {
   accounts     FinancialAccount[]
   assets       Asset[]
   incomes      Income[]
+  transactions Transaction[]
 
   @@map("users")
 }
@@ -58,6 +67,7 @@ model FinancialAccount {
   assets      Asset[]
   incomes     Income[]
   syncLogs    SyncLog[]
+  transactions Transaction[]
 
   @@map("financial_accounts")
 }
@@ -105,4 +115,24 @@ model SyncLog {
   account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("sync_logs")
+}
+
+model Transaction {
+  id               String           @id @default(cuid())
+  accountId        String
+  userId           String
+  date             DateTime         @db.Date
+  amount           Decimal          @db.Decimal(15, 2)
+  type             TransactionType
+  category         String?
+  note             String?
+  relatedAccountId String?
+  createdAt        DateTime         @default(now())
+
+  account          FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, date])
+  @@index([userId, date])
+  @@map("transactions")
 }
