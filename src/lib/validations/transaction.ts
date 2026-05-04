@@ -18,6 +18,9 @@ export const transferSchema = z.object({
   amount: z.number().positive("金额必须大于0"),
   date: z.string().min(1, "请选择日期"),
   note: z.string().optional(),
+}).refine((data) => data.fromAccountId !== data.toAccountId, {
+  message: "转出账户和转入账户不能相同",
+  path: ["toAccountId"],
 })
 
 export type TransactionInput = z.infer<typeof transactionSchema>
