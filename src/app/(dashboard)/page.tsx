@@ -346,7 +346,7 @@ export default async function HomePage() {
             </CardHeader>
             <CardContent>
               <AssetByCurrencyChart
-                data={Object.entries(assetsByCurrency).map(([currency, data]) => ({
+                data={Object.entries(assetsByCurrency).map(([currency, data]: [string, { amount: number; count: number }]) => ({
                   currency,
                   amount: data.amount,
                   amountCNY: data.amount * (exchangeRates[currency] || 1),
