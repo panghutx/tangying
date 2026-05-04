@@ -6,7 +6,7 @@ export default async function BatchAssetPage() {
   const session = await auth()
   const accounts = await prisma.financialAccount.findMany({
     where: { userId: session?.user?.id, isActive: true },
-    select: { id: true, name: true, platform: true },
+    select: { id: true, name: true, platform: true, currency: true },
     orderBy: { name: "asc" },
   })
 

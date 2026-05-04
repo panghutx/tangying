@@ -14,6 +14,7 @@ interface Account {
   id: string
   name: string
   platform: string
+  currency: string
 }
 
 interface BatchAssetFormProps {
@@ -77,7 +78,7 @@ export function BatchAssetForm({ accounts, defaultDate }: BatchAssetFormProps) {
               accountId: account.id,
               date: data.date,
               amount: assetData.amount,
-              currency: "CNY",
+              currency: account.currency,
               note: assetData.note || null,
             }),
           })
@@ -147,7 +148,7 @@ export function BatchAssetForm({ accounts, defaultDate }: BatchAssetFormProps) {
                     <Label className="font-medium">
                       {account.name}
                       <span className="text-gray-500 text-sm ml-2">
-                        ({account.platform})
+                        ({account.platform}) - {account.currency}
                       </span>
                     </Label>
                   </div>
