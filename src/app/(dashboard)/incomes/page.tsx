@@ -4,6 +4,21 @@ import { Button } from "@/components/ui/button"
 import { IncomeList } from "@/components/incomes/income-list"
 import Link from "next/link"
 
+interface IncomeWithAccount {
+  id: string
+  accountId: string
+  userId: string
+  date: Date
+  amount: { toNumber: () => number }
+  type: "PROFIT" | "DIVIDEND" | "INTEREST" | "FEE"
+  note: string | null
+  account: {
+    name: string
+    platform: string
+    currency: string
+  }
+}
+
 export default async function IncomesPage() {
   const session = await auth()
   const incomes = await prisma.income.findMany({
@@ -17,9 +32,9 @@ export default async function IncomesPage() {
   })
 
   // 将 Decimal 转换为普通数字
-  const serializedIncomes = incomes.map((income) => ({
+  const serializedIncomes = (incomes as IncomeWithAccount[]).map((income) => ({
     ...income,
-    amount: Number(income.amount),
+    amount: income.amount.toNumber(),
     date: income.date.toISOString(),
   }))
 

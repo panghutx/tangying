@@ -4,6 +4,23 @@ import { Button } from "@/components/ui/button"
 import { TransactionList } from "@/components/transactions/transaction-list"
 import Link from "next/link"
 
+interface TransactionWithAccount {
+  id: string
+  accountId: string
+  userId: string
+  date: Date
+  amount: { toNumber: () => number }
+  type: "INCOME" | "DEPOSIT" | "WITHDRAW" | "TRANSFER_IN" | "TRANSFER_OUT"
+  category: string | null
+  note: string | null
+  relatedAccountId: string | null
+  account: {
+    name: string
+    platform: string
+    currency: string
+  }
+}
+
 export default async function TransactionsPage() {
   const session = await auth()
   const transactions = await prisma.transaction.findMany({
@@ -16,9 +33,9 @@ export default async function TransactionsPage() {
     },
   })
 
-  const serializedTransactions = transactions.map((t) => ({
+  const serializedTransactions = (transactions as TransactionWithAccount[]).map((t) => ({
     ...t,
-    amount: Number(t.amount),
+    amount: t.amount.toNumber(),
     date: t.date.toISOString(),
   }))
 
