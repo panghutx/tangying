@@ -8,6 +8,7 @@ import { useSidebar } from "@/contexts/sidebar-context"
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
 } from "@/components/ui/sheet"
 
 const items = [
@@ -66,6 +67,7 @@ function MobileSidebar() {
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
       <SheetContent side="left" className="w-64 p-0">
+        <SheetTitle className="sr-only">导航菜单</SheetTitle>
         <div className="pt-4">
           <SidebarContent />
         </div>
