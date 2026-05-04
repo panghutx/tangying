@@ -89,17 +89,20 @@ export async function calculateAccountProfit(
   if (!endAsset) return null
 
   // 期初资产：优先取期间内最早的记录，否则取期间开始之前的最近记录
-  let startAsset: { amount: bigint; date: Date } | null = null
+  let startAsset: { amount: number; date: Date } | null = null
 
   if (assetsInPeriod.length > 0) {
     // 期间内有记录，取最早的一条作为期初
-    startAsset = assetsInPeriod[0]
+    startAsset = { amount: Number(assetsInPeriod[0].amount), date: assetsInPeriod[0].date }
   } else {
     // 期间内没有记录，取期间开始之前的最近记录
-    startAsset = await prisma.asset.findFirst({
+    const prevAsset = await prisma.asset.findFirst({
       where: { accountId, date: { lt: startDate } },
       orderBy: { date: "desc" },
     })
+    if (prevAsset) {
+      startAsset = { amount: Number(prevAsset.amount), date: prevAsset.date }
+    }
   }
 
   // 获取期间的流水汇总

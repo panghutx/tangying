@@ -4,6 +4,20 @@ import { Button } from "@/components/ui/button"
 import { AssetList } from "@/components/assets/asset-list"
 import Link from "next/link"
 
+interface AssetWithAccount {
+  id: string
+  accountId: string
+  userId: string
+  date: Date
+  amount: { toNumber: () => number }
+  currency: string
+  note: string | null
+  account: {
+    name: string
+    platform: string
+  }
+}
+
 export default async function AssetsPage() {
   const session = await auth()
   const assets = await prisma.asset.findMany({
@@ -17,9 +31,9 @@ export default async function AssetsPage() {
   })
 
   // 将 Decimal 转换为普通数字
-  const serializedAssets = assets.map((asset) => ({
+  const serializedAssets = (assets as AssetWithAccount[]).map((asset) => ({
     ...asset,
-    amount: Number(asset.amount),
+    amount: asset.amount.toNumber(),
     date: asset.date.toISOString(),
   }))
 
