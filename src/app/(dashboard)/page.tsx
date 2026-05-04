@@ -79,7 +79,7 @@ export default async function HomePage() {
     WHERE rn = 2
   `
 
-  const previousAssetsMap = new Map(
+  const previousAssetsMap = new Map<string, { accountId: string; currency: string; amount: bigint }>(
     previousAssetsRaw.map((a: { accountId: string; currency: string; amount: bigint }) => [a.accountId, a])
   )
 
