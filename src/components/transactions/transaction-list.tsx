@@ -116,8 +116,8 @@ export function TransactionList({ transactions }: TransactionListProps) {
 
   return (
     <>
-      <div className="rounded-lg border">
-        <Table>
+      <div className="overflow-x-auto rounded-lg border">
+        <Table className="min-w-[900px]">
           <TableHeader>
             <TableRow>
               <TableHead>日期</TableHead>
