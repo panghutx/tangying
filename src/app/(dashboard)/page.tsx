@@ -80,11 +80,11 @@ export default async function HomePage() {
   `
 
   const previousAssetsMap = new Map(
-    previousAssetsRaw.map(a => [a.accountId, a])
+    previousAssetsRaw.map((a: { accountId: string; currency: string; amount: bigint }) => [a.accountId, a])
   )
 
   // 获取所有涉及的币种
-  const currencies = [...new Set(latestAssetsRaw.map((a) => a.currency))]
+  const currencies = [...new Set(latestAssetsRaw.map((a: { currency: string }) => a.currency))]
   const exchangeRates = await getExchangeRates(currencies, "CNY")
 
   // 计算当前总资产（换算成人民币）
@@ -104,7 +104,7 @@ export default async function HomePage() {
   // 计算涨跌（只对比有上一次记录的账户）
   let change = 0
   let comparablePreviousTotal = 0
-  latestAssetsRaw.forEach(asset => {
+  latestAssetsRaw.forEach((asset: { accountId: string; currency: string; amount: bigint }) => {
     const prevAsset = previousAssetsMap.get(asset.accountId)
     if (prevAsset) {
       const currentRate = exchangeRates[asset.currency] || 1
@@ -117,7 +117,7 @@ export default async function HomePage() {
   const changePercent = comparablePreviousTotal > 0 ? (change / comparablePreviousTotal) * 100 : 0
 
   // 按币种统计资产
-  const assetsByCurrency = latestAssetsRaw.reduce((acc, asset) => {
+  const assetsByCurrency = latestAssetsRaw.reduce((acc: Record<string, { amount: number; count: number }>, asset: { currency: string; amount: bigint }) => {
     const currency = asset.currency
     if (!acc[currency]) {
       acc[currency] = { amount: 0, count: 0 }
@@ -125,7 +125,7 @@ export default async function HomePage() {
     acc[currency].amount += Number(asset.amount)
     acc[currency].count++
     return acc
-  }, {} as Record<string, { amount: number; count: number }>)
+  }, {})
 
   // 获取最近30天的资产快照用于趋势图
   const thirtyDaysAgo = new Date()
