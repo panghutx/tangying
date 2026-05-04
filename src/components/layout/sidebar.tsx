@@ -10,7 +10,9 @@ const items = [
   { href: "/assets/batch", label: "快速记账", icon: PlusCircle },
   { href: "/accounts", label: "账户管理" },
   { href: "/assets", label: "资产记录" },
+  { href: "/transactions", label: "流水记录" },
   { href: "/incomes", label: "收益记录" },
+  { href: "/reports", label: "收益报表" },
 ]
 
 export function Sidebar() {

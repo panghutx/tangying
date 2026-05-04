@@ -5,7 +5,7 @@ export const assetSchema = z.object({
   date: z.string().min(1, "请选择日期"),
   amount: z.number().positive("金额必须大于0"),
   currency: z.string().min(1, "币种不能为空"),
-  note: z.string().optional(),
+  note: z.string().optional().nullable(),
 })
 
 export const updateAssetSchema = assetSchema.partial()

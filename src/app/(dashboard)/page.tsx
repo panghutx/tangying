@@ -28,7 +28,7 @@ export default async function HomePage() {
     },
   })
 
-  // 获取最新资产快照（按账户分组）
+  // 获取每个账户的最新资产记录
   const latestAssetsRaw = await prisma.$queryRaw<{
     accountId: string
     accountName: string
@@ -58,24 +58,29 @@ export default async function HomePage() {
     JOIN financial_accounts a ON l."accountId" = a.id
   `
 
-  // 获取上一个有记录的日期的资产
-  const allDates = await prisma.asset.findMany({
-    where: { userId },
-    select: { date: true },
-    distinct: ["date"],
-    orderBy: { date: "desc" },
-    take: 2,
-  })
-
-  let previousAssets: { accountId: string; currency: string; amount: bigint }[] = []
-  if (allDates.length >= 2) {
-    previousAssets = await prisma.$queryRaw`
-      SELECT "accountId", currency, amount
+  // 获取每个账户的上一次记录（用于计算涨跌）
+  const previousAssetsRaw = await prisma.$queryRaw<{
+    accountId: string
+    currency: string
+    amount: bigint
+  }[]>`
+    WITH ranked AS (
+      SELECT
+        "accountId",
+        amount,
+        currency,
+        ROW_NUMBER() OVER (PARTITION BY "accountId" ORDER BY date DESC) as rn
       FROM assets
       WHERE "userId" = ${userId}
-        AND date = ${allDates[1].date}
-    `
-  }
+    )
+    SELECT "accountId", amount, currency
+    FROM ranked
+    WHERE rn = 2
+  `
+
+  const previousAssetsMap = new Map(
+    previousAssetsRaw.map(a => [a.accountId, a])
+  )
 
   // 获取所有涉及的币种
   const currencies = [...new Set(latestAssetsRaw.map((a) => a.currency))]
@@ -87,15 +92,28 @@ export default async function HomePage() {
     return sum + Number(asset.amount) * rate
   }, 0)
 
-  // 计算上一个日期的总资产
-  const previousTotalCNY = previousAssets.reduce((sum, asset) => {
-    const rate = exchangeRates[asset.currency] || 1
-    return sum + Number(asset.amount) * rate
+  // 计算上一个日期的总资产（每个账户的上一次记录）
+  const previousTotalCNY = latestAssetsRaw.reduce((sum, asset) => {
+    const prevAsset = previousAssetsMap.get(asset.accountId)
+    if (!prevAsset) return sum
+    const rate = exchangeRates[prevAsset.currency] || 1
+    return sum + Number(prevAsset.amount) * rate
   }, 0)
 
-  // 计算涨跌
-  const change = currentTotalCNY - previousTotalCNY
-  const changePercent = previousTotalCNY > 0 ? (change / previousTotalCNY) * 100 : 0
+  // 计算涨跌（只对比有上一次记录的账户）
+  let change = 0
+  let comparablePreviousTotal = 0
+  latestAssetsRaw.forEach(asset => {
+    const prevAsset = previousAssetsMap.get(asset.accountId)
+    if (prevAsset) {
+      const currentRate = exchangeRates[asset.currency] || 1
+      const prevRate = exchangeRates[prevAsset.currency] || 1
+      change += Number(asset.amount) * currentRate - Number(prevAsset.amount) * prevRate
+      comparablePreviousTotal += Number(prevAsset.amount) * prevRate
+    }
+  })
+
+  const changePercent = comparablePreviousTotal > 0 ? (change / comparablePreviousTotal) * 100 : 0
 
   // 按币种统计资产
   const assetsByCurrency = latestAssetsRaw.reduce((acc, asset) => {
@@ -126,20 +144,31 @@ export default async function HomePage() {
     },
   })
 
-  // 按日期聚合总资产（换算成人民币）
-  const assetsByDate = assets.reduce((acc, asset) => {
-    const dateKey = asset.date.toISOString().split("T")[0]
-    if (!acc[dateKey]) {
-      acc[dateKey] = { date: dateKey, total: 0 }
-    }
-    const rate = exchangeRates[asset.currency] || 1
-    acc[dateKey].total += Number(asset.amount) * rate
-    return acc
-  }, {} as Record<string, { date: string; total: number }>)
+  // 获取所有有记录的日期
+  const dates = [...new Set(assets.map(a => a.date.toISOString().split("T")[0]))].sort()
 
-  const trendData = Object.values(assetsByDate).sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  )
+  // 为每个日期计算总资产（使用每个账户在该日期或之前最近的记录）
+  const accountLatestValues = new Map<string, { amount: number; currency: string }>()
+
+  const trendData = dates.map(dateStr => {
+    // 更新每个账户在该日期的最新值
+    const dayAssets = assets.filter(a => a.date.toISOString().split("T")[0] === dateStr)
+    for (const asset of dayAssets) {
+      accountLatestValues.set(asset.accountId, {
+        amount: Number(asset.amount),
+        currency: asset.currency,
+      })
+    }
+
+    // 计算该日期的总资产
+    let total = 0
+    for (const [, value] of accountLatestValues) {
+      const rate = exchangeRates[value.currency] || 1
+      total += value.amount * rate
+    }
+
+    return { date: dateStr, total }
+  })
 
   // 获取收益记录统计
   const totalIncome = await prisma.income.aggregate({

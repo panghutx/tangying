@@ -4,8 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { assetSchema, AssetInput } from "@/lib/validations/asset"
-import { getSupportedCurrencies } from "@/lib/services/exchange-rate"
+import { transactionSchema, TransactionInput } from "@/lib/validations/transaction"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,21 +23,26 @@ interface Account {
   platform: string
 }
 
-interface AssetFormProps {
+interface TransactionFormProps {
   initialData?: {
     id: string
     accountId: string
     date: string
     amount: number
-    currency: string
+    type: "INCOME" | "DEPOSIT" | "WITHDRAW" | "TRANSFER_IN" | "TRANSFER_OUT"
+    category?: string
     note?: string
   }
   accounts: Account[]
 }
 
-const currencies = getSupportedCurrencies()
+const transactionTypes = [
+  { value: "INCOME", label: "收益入账" },
+  { value: "DEPOSIT", label: "资金存入" },
+  { value: "WITHDRAW", label: "资金取出" },
+]
 
-export function AssetForm({ initialData, accounts }: AssetFormProps) {
+export function TransactionForm({ initialData, accounts }: TransactionFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,8 +53,8 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<AssetInput>({
-    resolver: zodResolver(assetSchema),
+  } = useForm<TransactionInput>({
+    resolver: zodResolver(transactionSchema),
     defaultValues: initialData
       ? {
           ...initialData,
@@ -58,20 +62,22 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
         }
       : {
           date: new Date().toISOString().split("T")[0],
-          currency: "CNY",
+          type: "DEPOSIT",
           accountId: accounts[0]?.id || "",
         },
   })
 
   const accountId = watch("accountId")
-  const currency = watch("currency")
+  const type = watch("type")
 
-  const onSubmit = async (data: AssetInput) => {
+  const onSubmit = async (data: TransactionInput) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const url = initialData ? `/api/assets/${initialData.id}` : "/api/assets"
+      const url = initialData
+        ? `/api/transactions/${initialData.id}`
+        : "/api/transactions"
       const method = initialData ? "PUT" : "POST"
 
       const response = await fetch(url, {
@@ -86,7 +92,7 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
         return
       }
 
-      router.push("/assets")
+      router.push("/transactions")
       router.refresh()
     } catch {
       setError("网络错误，请稍后重试")
@@ -104,7 +110,7 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
             <a href="/accounts/new" className="text-blue-500 hover:underline">
               创建账户
             </a>{" "}
-            后再添加资产记录
+            后再添加流水记录
           </p>
         </CardContent>
       </Card>
@@ -114,7 +120,7 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
   return (
     <Card className="max-w-2xl">
       <CardHeader>
-        <CardTitle>{initialData ? "编辑资产记录" : "新增资产记录"}</CardTitle>
+        <CardTitle>{initialData ? "编辑流水记录" : "新增流水记录"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -122,16 +128,10 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
             <Label htmlFor="accountId">账户</Label>
             <Select
               value={accountId}
-              onValueChange={(value) => setValue("accountId", value as string)}
+              onValueChange={(value) => setValue("accountId", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择账户">
-                  {(value: string | null) => {
-                    if (!value) return "选择账户"
-                    const account = accounts.find(a => a.id === value)
-                    return account ? `${account.name} (${account.platform})` : value
-                  }}
-                </SelectValue>
+                <SelectValue placeholder="选择账户" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -154,42 +154,51 @@ export function AssetForm({ initialData, accounts }: AssetFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">金额</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                {...register("amount", { valueAsNumber: true })}
-                placeholder="资产总额"
-              />
-              {errors.amount && (
-                <p className="text-sm text-red-500">{errors.amount.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="amount">金额</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              {...register("amount", { valueAsNumber: true })}
+              placeholder="请输入金额"
+            />
+            {errors.amount && (
+              <p className="text-sm text-red-500">{errors.amount.message}</p>
+            )}
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="currency">币种</Label>
-              <Select
-                value={currency}
-                onValueChange={(value) => setValue("currency", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择币种" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currencies.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
-                      {c.symbol} {c.name} ({c.code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.currency && (
-                <p className="text-sm text-red-500">{errors.currency.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="type">类型</Label>
+            <Select
+              value={type}
+              onValueChange={(value) =>
+                setValue("type", value as TransactionInput["type"])
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="选择类型" />
+              </SelectTrigger>
+              <SelectContent>
+                {transactionTypes.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.type && (
+              <p className="text-sm text-red-500">{errors.type.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">分类</Label>
+            <Input
+              id="category"
+              {...register("category")}
+              placeholder="如：工资、利息等（可选）"
+            />
           </div>
 
           <div className="space-y-2">

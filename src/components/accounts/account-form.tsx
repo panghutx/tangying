@@ -48,6 +48,7 @@ export function AccountForm({ initialData }: AccountFormProps) {
   } = useForm<AccountInput>({
     resolver: zodResolver(accountSchema),
     defaultValues: initialData || {
+      type: "DOMESTIC",
       currency: "CNY",
     },
   })

@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { incomeSchema, IncomeInput } from "@/lib/validations/income"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -63,17 +63,12 @@ export function IncomeForm({ initialData, accounts }: IncomeFormProps) {
       : {
           date: new Date().toISOString().split("T")[0],
           type: "PROFIT",
+          accountId: accounts[0]?.id || "",
         },
   })
 
   const accountId = watch("accountId")
   const type = watch("type")
-
-  useEffect(() => {
-    if (accounts.length > 0 && !accountId) {
-      setValue("accountId", accounts[0].id)
-    }
-  }, [accounts, accountId, setValue])
 
   const onSubmit = async (data: IncomeInput) => {
     setIsLoading(true)
@@ -136,7 +131,13 @@ export function IncomeForm({ initialData, accounts }: IncomeFormProps) {
               onValueChange={(value) => setValue("accountId", value as string)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择账户" />
+                <SelectValue placeholder="选择账户">
+                  {(value: string | null) => {
+                    if (!value) return "选择账户"
+                    const account = accounts.find(a => a.id === value)
+                    return account ? `${account.name} (${account.platform})` : value
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (

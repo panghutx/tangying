@@ -83,8 +83,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(asset)
   } catch (err) {
     console.error("创建资产记录失败:", err)
+    if (err instanceof Error) {
+      console.error("Error message:", err.message)
+      console.error("Error stack:", err.stack)
+    }
     return NextResponse.json(
-      { error: "创建资产记录失败" },
+      { error: "创建资产记录失败", details: err instanceof Error ? err.message : String(err) },
       { status: 500 }
     )
   }
