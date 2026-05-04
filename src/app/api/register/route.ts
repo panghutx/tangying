@@ -34,9 +34,10 @@ export async function POST(request: Request) {
       email: user.email,
       name: user.name,
     })
-  } catch {
+  } catch (error) {
+    console.error("Register error:", error)
     return NextResponse.json(
-      { error: "注册失败，请检查输入信息" },
+      { error: `注册失败: ${error instanceof Error ? error.message : String(error)}` },
       { status: 400 }
     )
   }
