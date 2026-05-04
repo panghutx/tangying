@@ -69,9 +69,9 @@ export function RegisterForm() {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>注册账号</CardTitle>
-        <CardDescription>创建您的账户以开始使用</CardDescription>
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">躺盈记账</CardTitle>
+        <CardDescription>创建账户，开始记录财富增长</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

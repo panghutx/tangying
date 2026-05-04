@@ -55,8 +55,8 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>登录</CardTitle>
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">躺盈记账</CardTitle>
         <CardDescription>登录您的账户</CardDescription>
       </CardHeader>
       <CardContent>

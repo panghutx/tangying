@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "理财聚合器",
-  description: "聚合多平台理财收益",
+  title: "躺盈记账 - 个人资产收益追踪工具",
+  description: "记录多账户资产、自动计算真实收益、支持多币种换算。告别手动算账，躺着也能看清财富增长。",
 };
 
 export default function RootLayout({

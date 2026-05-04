@@ -204,7 +204,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">理财概览</h1>
+        <h1 className="text-2xl font-bold">资产概览</h1>
         <Link href="/assets/batch">
           <Button>快速记账</Button>
         </Link>
@@ -372,7 +372,7 @@ export default async function HomePage() {
         <CardContent>
           {accounts.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p>还没有添加理财账户</p>
+              <p>还没有添加账户</p>
               <Link
                 href="/accounts/new"
                 className="text-blue-500 hover:underline mt-2 inline-block"
@@ -463,7 +463,7 @@ export default async function HomePage() {
           className="p-4 rounded-lg border hover:bg-gray-50 transition-colors"
         >
           <h3 className="font-medium">账户管理</h3>
-          <p className="text-sm text-gray-500 mt-1">管理理财账户</p>
+          <p className="text-sm text-gray-500 mt-1">管理我的账户</p>
         </Link>
       </div>
     </div>

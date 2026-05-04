@@ -21,8 +21,8 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white pt-4">
       <div className="mb-8 px-6">
-        <h1 className="text-xl font-bold text-gray-800">理财聚合</h1>
-        <p className="text-xs text-gray-400 mt-1">多平台资产追踪</p>
+        <h1 className="text-xl font-bold text-gray-800">躺盈记账</h1>
+        <p className="text-xs text-gray-400 mt-1">躺着也能看清财富增长</p>
       </div>
       <nav className="space-y-1 px-3">
         {items.map((item) => (
