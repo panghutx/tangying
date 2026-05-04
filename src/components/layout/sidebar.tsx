@@ -64,7 +64,7 @@ function MobileSidebar() {
   const { isOpen, close } = useSidebar()
 
   return (
-    <Sheet open={isOpen} onOpenChange={close}>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
       <SheetContent side="left" className="w-64 p-0">
         <div className="pt-4">
           <SidebarContent />
