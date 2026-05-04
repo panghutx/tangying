@@ -117,7 +117,7 @@ export default async function HomePage() {
   const changePercent = comparablePreviousTotal > 0 ? (change / comparablePreviousTotal) * 100 : 0
 
   // 按币种统计资产
-  const assetsByCurrency = latestAssetsRaw.reduce((acc: Record<string, { amount: number; count: number }>, asset: { currency: string; amount: bigint }) => {
+  const assetsByCurrency: Record<string, { amount: number; count: number }> = latestAssetsRaw.reduce((acc, asset: { currency: string; amount: bigint }) => {
     const currency = asset.currency
     if (!acc[currency]) {
       acc[currency] = { amount: 0, count: 0 }
@@ -125,7 +125,7 @@ export default async function HomePage() {
     acc[currency].amount += Number(asset.amount)
     acc[currency].count++
     return acc
-  }, {})
+  }, {} as Record<string, { amount: number; count: number }>)
 
   // 获取最近30天的资产快照用于趋势图
   const thirtyDaysAgo = new Date()
@@ -346,7 +346,7 @@ export default async function HomePage() {
             </CardHeader>
             <CardContent>
               <AssetByCurrencyChart
-                data={Object.entries(assetsByCurrency).map(([currency, data]: [string, { amount: number; count: number }]) => ({
+                data={Object.entries(assetsByCurrency).map(([currency, data]) => ({
                   currency,
                   amount: data.amount,
                   amountCNY: data.amount * (exchangeRates[currency] || 1),
