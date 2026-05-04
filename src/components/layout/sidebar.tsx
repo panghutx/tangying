@@ -4,6 +4,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { PlusCircle } from "lucide-react"
+import { useSidebar } from "@/contexts/sidebar-context"
+import {
+  Sheet,
+  SheetContent,
+} from "@/components/ui/sheet"
 
 const items = [
   { href: "/", label: "仪表盘" },
@@ -15,11 +20,12 @@ const items = [
   { href: "/reports", label: "收益报表" },
 ]
 
-export function Sidebar() {
+function SidebarContent() {
   const pathname = usePathname()
+  const { close } = useSidebar()
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white pt-4">
+    <div>
       <div className="mb-8 px-6">
         <h1 className="text-xl font-bold text-gray-800">躺盈记账</h1>
         <p className="text-xs text-gray-400 mt-1">躺着也能看清财富增长</p>
@@ -29,6 +35,7 @@ export function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={close}
             className={cn(
               "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
               pathname === item.href
@@ -41,6 +48,37 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
+    </div>
+  )
+}
+
+function DesktopSidebar() {
+  return (
+    <aside className="hidden md:block fixed left-0 top-0 z-40 h-screen w-64 border-r bg-white pt-4">
+      <SidebarContent />
     </aside>
+  )
+}
+
+function MobileSidebar() {
+  const { isOpen, close } = useSidebar()
+
+  return (
+    <Sheet open={isOpen} onOpenChange={close}>
+      <SheetContent side="left" className="w-64 p-0">
+        <div className="pt-4">
+          <SidebarContent />
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+export function Sidebar() {
+  return (
+    <>
+      <DesktopSidebar />
+      <MobileSidebar />
+    </>
   )
 }
