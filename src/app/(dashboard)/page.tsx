@@ -146,14 +146,14 @@ export default async function HomePage() {
   })
 
   // 获取所有有记录的日期
-  const dates = [...new Set(assets.map(a => a.date.toISOString().split("T")[0]))].sort()
+  const dates = [...new Set(assets.map((a: { date: Date }) => a.date.toISOString().split("T")[0]))].sort() as string[]
 
   // 为每个日期计算总资产（使用每个账户在该日期或之前最近的记录）
   const accountLatestValues = new Map<string, { amount: number; currency: string }>()
 
-  const trendData = dates.map(dateStr => {
+  const trendData = dates.map((dateStr: string) => {
     // 更新每个账户在该日期的最新值
-    const dayAssets = assets.filter(a => a.date.toISOString().split("T")[0] === dateStr)
+    const dayAssets = assets.filter((a: { date: Date }) => a.date.toISOString().split("T")[0] === dateStr)
     for (const asset of dayAssets) {
       accountLatestValues.set(asset.accountId, {
         amount: Number(asset.amount),
@@ -182,10 +182,10 @@ export default async function HomePage() {
   })
 
   // 按账户货币转换后汇总
-  const totalIncomeCNY = incomes.reduce((sum, income) => {
+  const totalIncomeCNY = incomes.reduce((sum: number, income: { account: { currency: string }; amount: { toNumber: () => number } }) => {
     const currency = income.account.currency
     const rate = exchangeRates[currency] || 1
-    return sum + Number(income.amount) * rate
+    return sum + income.amount.toNumber() * rate
   }, 0)
 
   // 获取本月收益统计
