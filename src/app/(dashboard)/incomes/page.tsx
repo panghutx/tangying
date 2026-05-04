@@ -11,7 +11,7 @@ export default async function IncomesPage() {
     orderBy: { date: "desc" },
     include: {
       account: {
-        select: { name: true, platform: true },
+        select: { name: true, platform: true, currency: true },
       },
     },
   })

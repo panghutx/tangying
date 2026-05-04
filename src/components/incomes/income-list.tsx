@@ -36,6 +36,7 @@ interface Income {
   account: {
     name: string
     platform: string
+    currency: string
   }
 }
 
@@ -66,10 +67,10 @@ export function IncomeList({ incomes }: IncomeListProps) {
     }
   }
 
-  const formatAmount = (amount: number) => {
+  const formatAmount = (amount: number, currency: string) => {
     const formatted = new Intl.NumberFormat("zh-CN", {
       style: "currency",
-      currency: "CNY",
+      currency,
     }).format(Math.abs(amount))
     return amount >= 0 ? `+${formatted}` : `-${formatted}`
   }
@@ -105,7 +106,7 @@ export function IncomeList({ incomes }: IncomeListProps) {
               <TableRow key={income.id}>
                 <TableCell>{formatDate(income.date)}</TableCell>
                 <TableCell>
-                  {income.account.name} ({income.account.platform})
+                  {income.account.name} ({income.account.platform}) - {income.account.currency}
                 </TableCell>
                 <TableCell>{typeLabels[income.type]}</TableCell>
                 <TableCell
@@ -113,7 +114,7 @@ export function IncomeList({ incomes }: IncomeListProps) {
                     income.amount >= 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {formatAmount(income.amount)}
+                  {formatAmount(income.amount, income.account.currency)}
                 </TableCell>
                 <TableCell>{income.note || "-"}</TableCell>
                 <TableCell className="text-right">
