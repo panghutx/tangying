@@ -21,6 +21,7 @@ interface Account {
   id: string
   name: string
   platform: string
+  currency: string
 }
 
 interface TransferFormProps {
@@ -44,11 +45,17 @@ export function TransferForm({ accounts }: TransferFormProps) {
       date: new Date().toISOString().split("T")[0],
       fromAccountId: accounts[0]?.id || "",
       toAccountId: accounts[1]?.id || "",
+      fromAmount: 0,
+      toAmount: 0,
     },
   })
 
   const fromAccountId = watch("fromAccountId")
   const toAccountId = watch("toAccountId")
+
+  const fromAccount = accounts.find((a) => a.id === fromAccountId)
+  const toAccount = accounts.find((a) => a.id === toAccountId)
+  const isSameCurrency = fromAccount?.currency === toAccount?.currency
 
   const onSubmit = async (data: TransferInput) => {
     setIsLoading(true)
@@ -112,7 +119,7 @@ export function TransferForm({ accounts }: TransferFormProps) {
                   .filter((a) => a.id !== toAccountId)
                   .map((account) => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.name} ({account.platform})
+                      {account.name} ({account.platform}) - {account.currency}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -136,7 +143,7 @@ export function TransferForm({ accounts }: TransferFormProps) {
                   .filter((a) => a.id !== fromAccountId)
                   .map((account) => (
                     <SelectItem key={account.id} value={account.id}>
-                      {account.name} ({account.platform})
+                      {account.name} ({account.platform}) - {account.currency}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -147,16 +154,39 @@ export function TransferForm({ accounts }: TransferFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">转账金额</Label>
+            <Label htmlFor="fromAmount">
+              转出金额 {fromAccount && `(${fromAccount.currency})`}
+            </Label>
             <Input
-              id="amount"
+              id="fromAmount"
               type="number"
               step="0.01"
-              {...register("amount", { valueAsNumber: true })}
+              {...register("fromAmount", { valueAsNumber: true })}
               placeholder="请输入金额"
             />
-            {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount.message}</p>
+            {errors.fromAmount && (
+              <p className="text-sm text-red-500">{errors.fromAmount.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="toAmount">
+              转入金额 {toAccount && `(${toAccount?.currency})`}
+            </Label>
+            <Input
+              id="toAmount"
+              type="number"
+              step="0.01"
+              {...register("toAmount", { valueAsNumber: true })}
+              placeholder={isSameCurrency ? "同转出金额" : "请输入金额"}
+            />
+            {errors.toAmount && (
+              <p className="text-sm text-red-500">{errors.toAmount.message}</p>
+            )}
+            {!isSameCurrency && fromAccount && toAccount && (
+              <p className="text-xs text-gray-500">
+                跨币种转账：从 {fromAccount.currency} 转到 {toAccount.currency}
+              </p>
             )}
           </div>
 
