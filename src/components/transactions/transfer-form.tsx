@@ -112,7 +112,11 @@ export function TransferForm({ accounts }: TransferFormProps) {
               onValueChange={(value) => value && setValue("fromAccountId", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择转出账户" />
+                <SelectValue>
+                  {fromAccount
+                    ? `${fromAccount.name} (${fromAccount.platform}) - ${fromAccount.currency}`
+                    : "选择转出账户"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {accounts
@@ -136,7 +140,11 @@ export function TransferForm({ accounts }: TransferFormProps) {
               onValueChange={(value) => value && setValue("toAccountId", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择转入账户" />
+                <SelectValue>
+                  {toAccount
+                    ? `${toAccount.name} (${toAccount.platform}) - ${toAccount.currency}`
+                    : "选择转入账户"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {accounts
