@@ -70,10 +70,13 @@ export async function calculateAccountProfit(
 
   if (!account) return null
 
-  // 获取期初资产（开始日期或之前最近的记录）
-  const startAsset = await prisma.asset.findFirst({
-    where: { accountId, date: { lte: startDate } },
-    orderBy: { date: "desc" },
+  // 获取期间内的所有资产记录，按日期排序
+  const assetsInPeriod = await prisma.asset.findMany({
+    where: {
+      accountId,
+      date: { gte: startDate, lte: endDate },
+    },
+    orderBy: { date: "asc" },
   })
 
   // 获取期末资产（结束日期或之前最近的记录）
@@ -84,6 +87,20 @@ export async function calculateAccountProfit(
 
   // 如果没有期末资产记录，说明这个账户没有数据，返回 null
   if (!endAsset) return null
+
+  // 期初资产：优先取期间内最早的记录，否则取期间开始之前的最近记录
+  let startAsset: { amount: bigint; date: Date } | null = null
+
+  if (assetsInPeriod.length > 0) {
+    // 期间内有记录，取最早的一条作为期初
+    startAsset = assetsInPeriod[0]
+  } else {
+    // 期间内没有记录，取期间开始之前的最近记录
+    startAsset = await prisma.asset.findFirst({
+      where: { accountId, date: { lt: startDate } },
+      orderBy: { date: "desc" },
+    })
+  }
 
   // 获取期间的流水汇总
   const transactions = await prisma.transaction.groupBy({
@@ -121,24 +138,10 @@ export async function calculateAccountProfit(
   const assetChange = endAmount - startAmount
 
   // 判断是否有有效的期初数据
-  // 如果没有期初记录，但有期末记录，说明这是新账户，收益计算可能不准确
   const hasValidData = startAsset !== null
 
   // 真实收益 = 资产变动 - 净流入
-  // 如果没有有效的期初数据，需要特殊处理
-  let realProfit: number
-  if (hasValidData) {
-    realProfit = assetChange - netInflow
-  } else {
-    // 没有期初数据时，如果期间有存款/转入，收益 = 期末资产 - 净流入
-    // 如果期间没有流水，无法计算收益，设为 0
-    if (netInflow !== 0) {
-      realProfit = endAmount - netInflow
-    } else {
-      // 没有期初数据，也没有流水，无法确定收益来源
-      realProfit = 0
-    }
-  }
+  const realProfit = hasValidData ? assetChange - netInflow : 0
 
   // 收益率
   const profitRate = startAmount > 0 ? (realProfit / startAmount) * 100 : 0
