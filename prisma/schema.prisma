@@ -18,6 +18,7 @@ model User {
   accounts     FinancialAccount[]
   incomes      Income[]
   transactions Transaction[]
+  goals        Goal[]
 
   @@map("users")
 }
@@ -106,6 +107,35 @@ model Transaction {
   @@map("transactions")
 }
 
+model Goal {
+  id            String      @id @default(cuid())
+  userId        String
+  type          GoalType
+  name          String
+  targetAmount  Decimal     @db.Decimal(15, 2)
+  period        GoalPeriod?
+  deadline      DateTime?
+  status        GoalStatus  @default(ACTIVE)
+  createdAt     DateTime    @default(now())
+  completedAt   DateTime?
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress      GoalProgress[]
+
+  @@map("goals")
+}
+
+model GoalProgress {
+  id            String   @id @default(cuid())
+  goalId        String
+  date          DateTime @db.Date
+  currentAmount Decimal  @db.Decimal(15, 2)
+  createdAt     DateTime @default(now())
+  goal          Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, date])
+  @@map("goal_progress")
+}
+
 enum AccountType {
   DOMESTIC
   BANK
@@ -132,4 +162,21 @@ enum TransactionType {
   WITHDRAW
   TRANSFER_IN
   TRANSFER_OUT
+}
+
+enum GoalType {
+  ASSET
+  PROFIT
+}
+
+enum GoalPeriod {
+  MONTHLY
+  YEARLY
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  ARCHIVED
 }
