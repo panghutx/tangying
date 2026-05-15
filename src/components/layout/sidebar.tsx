@@ -19,6 +19,7 @@ const items = [
   { href: "/transactions", label: "流水记录" },
   { href: "/incomes", label: "收益记录" },
   { href: "/reports", label: "收益报表" },
+  { href: "/goals", label: "目标追踪" },
 ]
 
 function SidebarContent() {
