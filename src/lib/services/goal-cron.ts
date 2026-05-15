@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { calculateGoalProgress, updateGoal } from './goal'
+import { calculateGoalProgress, recordGoalProgress, updateGoal } from './goal'
 
 /**
  * Monthly reset for profit goals:
@@ -34,6 +34,23 @@ export async function runMonthlyGoalReset() {
   }
 
   console.log(`Processed ${monthlyProfitGoals.length} monthly profit goals`)
+}
+
+/**
+ * Record daily progress for all active goals
+ * Should be called daily via cron
+ */
+export async function recordAllGoalProgress() {
+  const activeGoals = await prisma.goal.findMany({
+    where: { status: 'ACTIVE' },
+  })
+
+  for (const goal of activeGoals) {
+    const currentAmount = await calculateGoalProgress(goal.id)
+    await recordGoalProgress(goal.id, currentAmount)
+  }
+
+  console.log(`Recorded progress for ${activeGoals.length} goals`)
 }
 
 // Export for use in cron job setup
