@@ -8,6 +8,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { getExchangeRates, convertCurrency } from "@/lib/services/exchange-rate"
 import { calculateAllProfits, getTotalProfitCNY } from "@/lib/services/profit"
+import { getGoals } from "@/lib/services/goal"
+import { calculateGoalProgress } from "@/lib/services/goal"
+import { GoalCard } from "@/components/goals/goal-card"
 
 export default async function HomePage() {
   const session = await auth()
@@ -59,29 +62,6 @@ export default async function HomePage() {
     JOIN financial_accounts a ON l."accountId" = a.id
   `
 
-  // 获取每个账户的上一次记录（用于计算涨跌）
-  const previousAssetsRaw = await prisma.$queryRaw<{
-    accountId: string
-    currency: string
-    amount: bigint
-  }[]>`
-    WITH ranked AS (
-      SELECT
-        "accountId",
-        amount,
-        currency,
-        ROW_NUMBER() OVER (PARTITION BY "accountId" ORDER BY date DESC) as rn
-      FROM assets
-      WHERE "userId" = ${userId}
-    )
-    SELECT "accountId", amount, currency
-    FROM ranked
-    WHERE rn = 2
-  `
-
-  const previousAssetsMap = new Map<string, { accountId: string; currency: string; amount: bigint }>(
-    previousAssetsRaw.map((a: { accountId: string; currency: string; amount: bigint }) => [a.accountId, a])
-  )
 
   // 获取所有涉及的币种
   const currencies = [...new Set(latestAssetsRaw.map((a: { currency: string }) => a.currency))] as string[]
@@ -93,28 +73,6 @@ export default async function HomePage() {
     return sum + Number(asset.amount) * rate
   }, 0)
 
-  // 计算上一个日期的总资产（每个账户的上一次记录）
-  const previousTotalCNY = latestAssetsRaw.reduce((sum: number, asset: { accountId: string }) => {
-    const prevAsset = previousAssetsMap.get(asset.accountId)
-    if (!prevAsset) return sum
-    const rate = exchangeRates[prevAsset.currency] || 1
-    return sum + Number(prevAsset.amount) * rate
-  }, 0)
-
-  // 计算涨跌（只对比有上一次记录的账户）
-  let change = 0
-  let comparablePreviousTotal = 0
-  latestAssetsRaw.forEach((asset: { accountId: string; currency: string; amount: bigint }) => {
-    const prevAsset = previousAssetsMap.get(asset.accountId)
-    if (prevAsset) {
-      const currentRate = exchangeRates[asset.currency] || 1
-      const prevRate = exchangeRates[prevAsset.currency] || 1
-      change += Number(asset.amount) * currentRate - Number(prevAsset.amount) * prevRate
-      comparablePreviousTotal += Number(prevAsset.amount) * prevRate
-    }
-  })
-
-  const changePercent = comparablePreviousTotal > 0 ? (change / comparablePreviousTotal) * 100 : 0
 
   // 按币种统计资产
   const assetsByCurrency: Record<string, { amount: number; count: number }> = latestAssetsRaw.reduce((acc, asset: { currency: string; amount: bigint }) => {
@@ -171,26 +129,18 @@ export default async function HomePage() {
     return { date: dateStr, total }
   })
 
-  // 获取收益记录统计（需要按币种转换后汇总）
-  const incomes = await prisma.income.findMany({
-    where: { userId },
-    include: {
-      account: {
-        select: { currency: true },
-      },
-    },
-  })
-
-  // 按账户货币转换后汇总
-  const totalIncomeCNY = incomes.reduce((sum: number, income: { account: { currency: string }; amount: { toNumber: () => number } }) => {
-    const currency = income.account.currency
-    const rate = exchangeRates[currency] || 1
-    return sum + income.amount.toNumber() * rate
-  }, 0)
-
   // 获取本月收益统计
   const monthProfits = await calculateAllProfits(userId, "month")
   const monthProfitCNY = await getTotalProfitCNY(monthProfits)
+
+  // Get active goals for dashboard
+  const goals = await getGoals(session.user.id, "ACTIVE")
+  const goalsWithProgress = await Promise.all(
+    goals.slice(0, 2).map(async (goal) => ({
+      ...goal,
+      currentAmount: await calculateGoalProgress(goal.id),
+    }))
+  )
 
   // 格式化货币
   const formatCurrency = (amount: number) => {
@@ -211,7 +161,7 @@ export default async function HomePage() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
@@ -231,32 +181,6 @@ export default async function HomePage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
-              今日涨跌
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                change >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {change >= 0 ? "+" : ""}
-              {formatCurrency(Math.abs(change))}
-            </div>
-            <p
-              className={`text-xs ${
-                change >= 0 ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {changePercent >= 0 ? "+" : ""}
-              {changePercent.toFixed(2)}%
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
               账户数量
             </CardTitle>
           </CardHeader>
@@ -270,23 +194,6 @@ export default async function HomePage() {
                 添加账户
               </Link>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              累计收益
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                totalIncomeCNY >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {formatCurrency(totalIncomeCNY)}
-            </div>
           </CardContent>
         </Card>
 
@@ -313,6 +220,15 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Goal Cards */}
+      {goalsWithProgress.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {goalsWithProgress.map((goal) => (
+            <GoalCard key={goal.id} goal={goal} />
+          ))}
+        </div>
+      )}
 
       {/* 图表区域 */}
       <div className="grid gap-6 md:grid-cols-2">
