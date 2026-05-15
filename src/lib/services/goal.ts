@@ -24,7 +24,7 @@ export async function createGoal(input: CreateGoalInput) {
       name: input.name,
       targetAmount: input.targetAmount,
       period: input.period,
-      deadline: input.deadline,
+      deadline: input.deadline ? new Date(input.deadline) : null,
       status: 'ACTIVE',
     },
   })
