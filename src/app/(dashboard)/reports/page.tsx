@@ -2,13 +2,7 @@ import { auth } from "@/lib/auth"
 import { calculateAllProfits, getTotalProfitCNY, PeriodType } from "@/lib/services/profit"
 import { ProfitTable } from "@/components/profits/profit-table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { PeriodSelector } from "@/components/reports/period-selector"
 
 interface ReportsPageProps {
   searchParams: Promise<{ period?: string }>
@@ -47,18 +41,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">收益报表</h1>
-        <Select name="period" defaultValue={period}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="today">今日</SelectItem>
-            <SelectItem value="week">本周</SelectItem>
-            <SelectItem value="month">本月</SelectItem>
-            <SelectItem value="year">今年</SelectItem>
-            <SelectItem value="all">累计</SelectItem>
-          </SelectContent>
-        </Select>
+        <PeriodSelector defaultValue={period} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
