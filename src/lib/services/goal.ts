@@ -87,16 +87,20 @@ export async function calculateGoalProgress(goalId: string) {
       .reduce((sum, a) => sum + Number(a.amount) * (rates[a.currency] || 1), 0)
     return total
   } else {
-    // Profit goal: sum realProfit for current period
+    // Profit goal: sum realProfit for current period, converted to CNY
     const period = goal.period === 'MONTHLY' ? 'month' : 'year'
-    const { getDateRange } = await import('./profit')
-    const { start, end } = getDateRange(period)
-
-    // Use calculateAllProfits for the user
     const { calculateAllProfits } = await import('./profit')
     const profits = await calculateAllProfits(goal.userId, period)
 
-    return profits.reduce((sum, p) => sum + p.realProfit, 0)
+    // Convert each profit to CNY before summing
+    const currencies = [...new Set(profits.map((p) => p.currency))]
+    const { getExchangeRates } = await import('./exchange-rate')
+    const rates = await getExchangeRates(currencies, 'CNY')
+
+    return profits.reduce((total, profit) => {
+      const rate = rates[profit.currency] || 1
+      return total + profit.realProfit * rate
+    }, 0)
   }
 }
 
