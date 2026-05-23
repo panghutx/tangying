@@ -7,6 +7,9 @@ export interface ProfitResult {
   currency: string
   startDate: Date
   endDate: Date
+  startAssetDate: Date | null
+  endAssetDate: Date | null
+  netInflowStartDate: Date
   startAsset: number
   endAsset: number
   assetChange: number
@@ -32,7 +35,9 @@ export function getDateRange(period: PeriodType, customStart?: Date, customEnd?:
       return { start: today, end: now }
     case "week": {
       const weekStart = new Date(today)
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+      const dayOfWeek = weekStart.getDay()
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+      weekStart.setDate(weekStart.getDate() - daysToSubtract)
       return { start: weekStart, end: now }
     }
     case "month": {
@@ -70,15 +75,6 @@ export async function calculateAccountProfit(
 
   if (!account) return null
 
-  // 获取期间内的所有资产记录，按日期排序
-  const assetsInPeriod = await prisma.asset.findMany({
-    where: {
-      accountId,
-      date: { gte: startDate, lte: endDate },
-    },
-    orderBy: { date: "asc" },
-  })
-
   // 获取期末资产（结束日期或之前最近的记录）
   const endAsset = await prisma.asset.findFirst({
     where: { accountId, date: { lte: endDate } },
@@ -88,29 +84,30 @@ export async function calculateAccountProfit(
   // 如果没有期末资产记录，说明这个账户没有数据，返回 null
   if (!endAsset) return null
 
-  // 期初资产：优先取期间内最早的记录，否则取期间开始之前的最近记录
-  let startAsset: { amount: number; date: Date } | null = null
+  // 期初资产：优先取期间开始之前的最近记录，如果没有则取期间内最早的记录
+  let startAssetRecord = await prisma.asset.findFirst({
+    where: { accountId, date: { lte: startDate } },
+    orderBy: { date: "desc" },
+  })
 
-  if (assetsInPeriod.length > 0) {
-    // 期间内有记录，取最早的一条作为期初
-    startAsset = { amount: Number(assetsInPeriod[0].amount), date: assetsInPeriod[0].date }
-  } else {
-    // 期间内没有记录，取期间开始之前的最近记录
-    const prevAsset = await prisma.asset.findFirst({
-      where: { accountId, date: { lt: startDate } },
-      orderBy: { date: "desc" },
+  // 如果期间开始之前没有记录，取期间内最早的记录
+  if (!startAssetRecord) {
+    startAssetRecord = await prisma.asset.findFirst({
+      where: { accountId, date: { gte: startDate, lte: endDate } },
+      orderBy: { date: "asc" },
     })
-    if (prevAsset) {
-      startAsset = { amount: Number(prevAsset.amount), date: prevAsset.date }
-    }
   }
 
-  // 获取期间的流水汇总
+  const startAmount = startAssetRecord ? Number(startAssetRecord.amount) : 0
+  const endAmount = Number(endAsset.amount)
+
+  // 获取期间的流水汇总（从期初资产日期到期末资产日期）
+  const actualStartDate = startAssetRecord?.date || startDate
   const transactions = await prisma.transaction.groupBy({
     by: ["type"],
     where: {
       accountId,
-      date: { gte: startDate, lte: endDate },
+      date: { gte: actualStartDate, lte: endDate },
     },
     _sum: { amount: true },
   })
@@ -136,12 +133,10 @@ export async function calculateAccountProfit(
     totals.DEPOSIT + totals.TRANSFER_IN - totals.WITHDRAW - totals.TRANSFER_OUT
 
   // 资产变动
-  const startAmount = Number(startAsset?.amount || 0)
-  const endAmount = Number(endAsset?.amount || 0)
   const assetChange = endAmount - startAmount
 
   // 判断是否有有效的期初数据
-  const hasValidData = startAsset !== null
+  const hasValidData = startAssetRecord !== null
 
   // 真实收益 = 资产变动 - 净流入
   const realProfit = hasValidData ? assetChange - netInflow : 0
@@ -155,6 +150,9 @@ export async function calculateAccountProfit(
     currency: account.currency,
     startDate,
     endDate,
+    startAssetDate: startAssetRecord?.date || null,
+    endAssetDate: endAsset.date,
+    netInflowStartDate: actualStartDate,
     startAsset: startAmount,
     endAsset: endAmount,
     assetChange,
@@ -207,4 +205,22 @@ export async function getTotalProfitCNY(
     const rate = rates[profit.currency] || 1
     return total + profit.realProfit * rate
   }, 0)
+}
+
+export async function getTransactionsByAccount(
+  accountId: string,
+  startDate: Date,
+  endDate: Date
+) {
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      accountId,
+      date: { gte: startDate, lte: endDate },
+    },
+    orderBy: { date: "desc" },
+    include: {
+      relatedAccount: { select: { name: true } },
+    },
+  })
+  return transactions
 }

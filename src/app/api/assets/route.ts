@@ -13,10 +13,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get("accountId")
+    const startDate = searchParams.get("startDate")
+    const endDate = searchParams.get("endDate")
 
-    const where: { userId: string; accountId?: string } = { userId: session.user.id }
+    const where: { userId: string; accountId?: string; date?: { gte?: Date; lte?: Date } } = { userId: session.user.id }
     if (accountId) {
       where.accountId = accountId
+    }
+    if (startDate || endDate) {
+      where.date = {}
+      if (startDate) where.date.gte = new Date(startDate)
+      if (endDate) where.date.lte = new Date(endDate)
     }
 
     const assets = await prisma.asset.findMany({

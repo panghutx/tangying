@@ -57,7 +57,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 totalProfitCNY >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
-              {totalProfitCNY >= 0 ? "+" : ""}
+              {totalProfitCNY < 0 ? "-" : "+"}
               {formatCurrency(Math.abs(totalProfitCNY))}
             </div>
             <p className="text-xs text-gray-400 mt-1">已换算为 CNY</p>
