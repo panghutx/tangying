@@ -40,6 +40,8 @@ const transactionTypes = [
   { value: "INCOME", label: "收益入账" },
   { value: "DEPOSIT", label: "资金存入" },
   { value: "WITHDRAW", label: "资金取出" },
+  { value: "TRANSFER_IN", label: "转账转入" },
+  { value: "TRANSFER_OUT", label: "转账转出" },
 ]
 
 export function TransactionForm({ initialData, accounts }: TransactionFormProps) {
@@ -69,6 +71,13 @@ export function TransactionForm({ initialData, accounts }: TransactionFormProps)
 
   const accountId = watch("accountId")
   const type = watch("type")
+
+  const selectedAccount = accounts.find((a) => a.id === accountId)
+  const selectedAccountLabel = selectedAccount
+    ? `${selectedAccount.name} (${selectedAccount.platform})`
+    : "选择账户"
+
+  const selectedTypeLabel = transactionTypes.find((t) => t.value === type)?.label || "选择类型"
 
   const onSubmit = async (data: TransactionInput) => {
     setIsLoading(true)
@@ -131,7 +140,7 @@ export function TransactionForm({ initialData, accounts }: TransactionFormProps)
               onValueChange={(value) => value && setValue("accountId", value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择账户" />
+                <SelectValue>{selectedAccountLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -177,7 +186,7 @@ export function TransactionForm({ initialData, accounts }: TransactionFormProps)
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="选择类型" />
+                <SelectValue>{selectedTypeLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {transactionTypes.map((t) => (
