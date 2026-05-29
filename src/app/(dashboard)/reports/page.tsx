@@ -9,7 +9,6 @@ interface ReportsPageProps {
 }
 
 const periodLabels: Record<string, string> = {
-  today: "今日",
   week: "本周",
   month: "本月",
   year: "今年",

@@ -19,6 +19,7 @@ model User {
   incomes      Income[]
   transactions Transaction[]
   goals        Goal[]
+  weeklyProfits WeeklyProfit[]
 
   @@map("users")
 }
@@ -40,6 +41,7 @@ model FinancialAccount {
   syncLogs            SyncLog[]
   transactions        Transaction[]
   relatedTransactions Transaction[] @relation("TransferRelation")
+  weeklyProfits       WeeklyProfit[]
 
   @@map("financial_accounts")
 }
@@ -134,6 +136,41 @@ model GoalProgress {
 
   @@unique([goalId, date])
   @@map("goal_progress")
+}
+
+model WeeklyProfit {
+  id              String   @id @default(cuid())
+  userId          String
+  accountId       String
+  weekStartDate   DateTime @db.Date
+  weekEndDate     DateTime @db.Date
+
+  startAsset      Decimal  @db.Decimal(15, 2)
+  endAsset        Decimal  @db.Decimal(15, 2)
+  startAssetDate  DateTime?
+  endAssetDate    DateTime?
+
+  totalDeposit    Decimal  @db.Decimal(15, 2)
+  totalWithdraw   Decimal  @db.Decimal(15, 2)
+  totalTransferIn Decimal  @db.Decimal(15, 2)
+  totalTransferOut Decimal @db.Decimal(15, 2)
+  totalIncome     Decimal  @db.Decimal(15, 2)
+
+  netInflow       Decimal  @db.Decimal(15, 2)
+  realProfit      Decimal  @db.Decimal(15, 2)
+  profitRate      Decimal  @db.Decimal(10, 4)
+
+  currency        String
+  hasValidData    Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account         FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, weekStartDate])
+  @@index([userId, weekStartDate])
+  @@map("weekly_profits")
 }
 
 enum AccountType {

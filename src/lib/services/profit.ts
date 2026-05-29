@@ -26,6 +26,23 @@ export interface ProfitResult {
 
 export type PeriodType = "today" | "week" | "month" | "year" | "all" | "custom"
 
+export function getWeekBoundary(weekOffset: number = 0) {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const dayOfWeek = today.getDay()
+  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+  // Get Monday of target week
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - daysToSubtract - (weekOffset * 7))
+
+  // Get Sunday
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6)
+
+  return { start: weekStart, end: weekEnd }
+}
+
 export function getDateRange(period: PeriodType, customStart?: Date, customEnd?: Date) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())

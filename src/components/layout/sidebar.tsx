@@ -3,8 +3,9 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, ChevronRight } from "lucide-react"
 import { useSidebar } from "@/contexts/sidebar-context"
+import { useState } from "react"
 import {
   Sheet,
   SheetContent,
@@ -18,13 +19,25 @@ const items = [
   { href: "/assets", label: "资产记录" },
   { href: "/transactions", label: "流水记录" },
   { href: "/incomes", label: "收益记录" },
+]
+
+const reportItems = [
   { href: "/reports", label: "收益报表" },
+  { href: "/reports/calendar", label: "周收益日历" },
+]
+
+const bottomItems = [
   { href: "/goals", label: "目标追踪" },
 ]
 
 function SidebarContent() {
   const pathname = usePathname()
   const { close } = useSidebar()
+  const [reportsOpen, setReportsOpen] = useState(
+    pathname.startsWith("/reports")
+  )
+
+  const isActive = (href: string) => pathname === href
 
   return (
     <div>
@@ -40,12 +53,68 @@ function SidebarContent() {
             onClick={close}
             className={cn(
               "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
-              pathname === item.href
+              isActive(item.href)
                 ? "bg-blue-50 text-blue-700"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             )}
           >
             {item.icon && <item.icon className="h-4 w-4" />}
+            {item.label}
+          </Link>
+        ))}
+
+        {/* Reports section */}
+        <div>
+          <button
+            onClick={() => setReportsOpen(!reportsOpen)}
+            className={cn(
+              "flex items-center justify-between w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+              pathname.startsWith("/reports")
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            )}
+          >
+            <span>收益报表</span>
+            <ChevronRight
+              className={cn(
+                "h-4 w-4 transition-transform",
+                reportsOpen && "rotate-90"
+              )}
+            />
+          </button>
+          {reportsOpen && (
+            <div className="ml-4 mt-1 space-y-1">
+              {reportItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={close}
+                  className={cn(
+                    "flex items-center rounded-lg px-4 py-2 text-sm transition-colors",
+                    isActive(item.href)
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {bottomItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={close}
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+              isActive(item.href)
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            )}
+          >
             {item.label}
           </Link>
         ))}

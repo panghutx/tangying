@@ -22,7 +22,6 @@ export function PeriodSelector({ defaultValue }: { defaultValue: PeriodType }) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="today">今日</SelectItem>
         <SelectItem value="week">本周</SelectItem>
         <SelectItem value="month">本月</SelectItem>
         <SelectItem value="year">今年</SelectItem>
