@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { saveWeeklyProfits } from "@/lib/services/weekly-profit"
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Verify cron secret (for manual triggers)
   const authHeader = request.headers.get("authorization")
   const cronSecret = process.env.CRON_SECRET
