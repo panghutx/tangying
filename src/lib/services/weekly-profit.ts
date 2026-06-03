@@ -262,23 +262,32 @@ export async function getCalendarData(userId: string, months: number = 6) {
 
       // Calculate week profit
       let weekProfit = 0
-      let weekRate = 0
+      let weekTotalStartAsset = 0  // 用于计算加权收益率
       let hasData = false
 
       if (weeklyProfits.length > 0) {
         const currencies = [...new Set(weeklyProfits.map((p) => p.currency))]
         const rates = await getExchangeRates(currencies, "CNY")
+
+        // 换算成 CNY 后的总收益
         weekProfit = weeklyProfits.reduce((total, profit) => {
           const rate = rates[profit.currency] || 1
           return total + profit.realProfit * rate
         }, 0)
-        weekRate = weeklyProfits.reduce((total, profit) => {
-          return total + profit.profitRate
-        }, 0) / weeklyProfits.length
+
+        // 换算成 CNY 后的总期初资产（用于计算加权收益率）
+        weekTotalStartAsset = weeklyProfits.reduce((total, profit) => {
+          const rate = rates[profit.currency] || 1
+          return total + profit.startAsset * rate
+        }, 0)
+
         hasData = weeklyProfits.some((p) => p.hasValidData)
         weekTotalProfit += weekProfit
         weekCount++
       }
+
+      // 收益率 = 总收益 / 总期初资产（加权平均）
+      const weekRate = weekTotalStartAsset > 0 ? (weekProfit / weekTotalStartAsset) * 100 : 0
 
       // Generate days for this week
       const days: CalendarDay[] = []
