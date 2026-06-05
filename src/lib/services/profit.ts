@@ -118,13 +118,12 @@ export async function calculateAccountProfit(
   const startAmount = startAssetRecord ? Number(startAssetRecord.amount) : 0
   const endAmount = Number(endAsset.amount)
 
-  // 获取期间的流水汇总（从期初资产日期到期末资产日期）
-  const actualStartDate = startAssetRecord?.date || startDate
+  // 获取期间的流水汇总（只统计所选周期内的流水）
   const transactions = await prisma.transaction.groupBy({
     by: ["type"],
     where: {
       accountId,
-      date: { gte: actualStartDate, lte: endDate },
+      date: { gte: startDate, lte: endDate },
     },
     _sum: { amount: true },
   })
@@ -169,7 +168,7 @@ export async function calculateAccountProfit(
     endDate,
     startAssetDate: startAssetRecord?.date || null,
     endAssetDate: endAsset.date,
-    netInflowStartDate: actualStartDate,
+    netInflowStartDate: startDate,
     startAsset: startAmount,
     endAsset: endAmount,
     assetChange,

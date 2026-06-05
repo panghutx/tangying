@@ -85,14 +85,10 @@ export default async function HomePage() {
     return acc
   }, {} as Record<string, { amount: number; count: number }>)
 
-  // 获取最近30天的资产快照用于趋势图
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
+  // 获取所有资产快照用于趋势图
   const assets = await prisma.asset.findMany({
     where: {
       userId,
-      date: { gte: thirtyDaysAgo },
     },
     orderBy: { date: "asc" },
     select: {
@@ -235,7 +231,7 @@ export default async function HomePage() {
         {/* 趋势图表 */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>资产趋势（近30天）</CardTitle>
+            <CardTitle>资产趋势</CardTitle>
           </CardHeader>
           <CardContent>
             {trendData.length > 0 ? (
