@@ -14,6 +14,7 @@ import {
   Calendar,
   DollarSign,
   Target,
+  PieChart,
 } from "lucide-react"
 import { useSidebar } from "@/contexts/sidebar-context"
 import { useState } from "react"
@@ -28,6 +29,7 @@ const items = [
   { href: "/assets/batch", label: "快速记账", icon: PlusCircle },
   { href: "/accounts", label: "账户管理", icon: Wallet },
   { href: "/assets", label: "资产记录", icon: TrendingUp },
+  { href: "/portfolio", label: "投资持仓", icon: PieChart },
   { href: "/transactions", label: "流水记录", icon: ArrowLeftRight },
 ]
 
