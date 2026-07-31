@@ -12,8 +12,6 @@ import {
   ArrowLeftRight,
   BarChart3,
   Calendar,
-  DollarSign,
-  Target,
   PieChart,
 } from "lucide-react"
 import { useSidebar } from "@/contexts/sidebar-context"
@@ -36,11 +34,6 @@ const items = [
 const reportItems = [
   { href: "/reports", label: "收益报表", icon: BarChart3 },
   { href: "/reports/calendar", label: "周收益日历", icon: Calendar },
-]
-
-const bottomItems = [
-  { href: "/incomes", label: "收益记录", icon: DollarSign },
-  { href: "/goals", label: "目标追踪", icon: Target },
 ]
 
 function SidebarContent() {
@@ -156,22 +149,6 @@ function SidebarContent() {
           )}
         </div>
 
-        {bottomItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={close}
-            className={cn(
-              "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
-              isActive(item.href)
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            )}
-          >
-            {item.icon && <item.icon className="h-4 w-4" />}
-            {item.label}
-          </Link>
-        ))}
       </nav>
     </div>
   )

@@ -6,11 +6,8 @@ import { AssetTrendChart } from "@/components/charts/asset-trend-chart"
 import { AssetByCurrencyChart } from "@/components/charts/asset-by-currency-chart"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { getExchangeRates, convertCurrency } from "@/lib/services/exchange-rate"
+import { getExchangeRates } from "@/lib/services/exchange-rate"
 import { calculateAllProfits, getTotalProfitCNY } from "@/lib/services/profit"
-import { getGoals } from "@/lib/services/goal"
-import { calculateGoalProgress } from "@/lib/services/goal"
-import { GoalCard } from "@/components/goals/goal-card"
 
 export default async function HomePage() {
   const session = await auth()
@@ -27,7 +24,7 @@ export default async function HomePage() {
     orderBy: { createdAt: "desc" },
     include: {
       _count: {
-        select: { assets: true, incomes: true },
+        select: { assets: true },
       },
     },
   })
@@ -129,15 +126,6 @@ export default async function HomePage() {
   const monthProfits = await calculateAllProfits(userId, "month")
   const monthProfitCNY = await getTotalProfitCNY(monthProfits)
 
-  // Get active goals for dashboard
-  const goals = await getGoals(session.user.id, "ACTIVE")
-  const goalsWithProgress = await Promise.all(
-    goals.slice(0, 2).map(async (goal) => ({
-      ...goal,
-      currentAmount: await calculateGoalProgress(goal.id),
-    }))
-  )
-
   // 格式化货币
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("zh-CN", {
@@ -216,15 +204,6 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Goal Cards */}
-      {goalsWithProgress.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2">
-          {goalsWithProgress.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} />
-          ))}
-        </div>
-      )}
 
       {/* 图表区域 */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -353,21 +332,13 @@ export default async function HomePage() {
       </Card>
 
       {/* 快捷操作 */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Link
           href="/assets"
           className="p-4 rounded-lg border hover:bg-gray-50 transition-colors"
         >
           <h3 className="font-medium">资产记录</h3>
           <p className="text-sm text-gray-500 mt-1">查看和管理资产快照</p>
-        </Link>
-
-        <Link
-          href="/incomes"
-          className="p-4 rounded-lg border hover:bg-gray-50 transition-colors"
-        >
-          <h3 className="font-medium">收益记录</h3>
-          <p className="text-sm text-gray-500 mt-1">查看和管理收益明细</p>
         </Link>
 
         <Link

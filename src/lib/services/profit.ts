@@ -87,10 +87,10 @@ export async function calculateAccountProfit(
   // 获取账户信息
   const account = await prisma.financialAccount.findUnique({
     where: { id: accountId },
-    select: { id: true, name: true, currency: true },
+    select: { id: true, name: true, currency: true, includeInProfit: true },
   })
 
-  if (!account) return null
+  if (!account || !account.includeInProfit) return null
 
   // 获取期末资产（结束日期或之前最近的记录）
   const endAsset = await prisma.asset.findFirst({
@@ -193,7 +193,7 @@ export async function calculateAllProfits(
   const { start, end } = getDateRange(period, customStart, customEnd)
 
   const accounts = await prisma.financialAccount.findMany({
-    where: { userId, isActive: true },
+    where: { userId, isActive: true, includeInProfit: true },
     select: { id: true },
   })
 

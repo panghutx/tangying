@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { AssetList } from "@/components/assets/asset-list"
+import { GenerateAssetButton } from "@/components/assets/generate-asset-button"
 import Link from "next/link"
 
 interface AssetWithAccount {
@@ -12,6 +13,7 @@ interface AssetWithAccount {
   amount: { toNumber: () => number }
   currency: string
   note: string | null
+  source: "MANUAL" | "AUTO_HOLDINGS" | "AUTO_MIXED"
   account: {
     name: string
     platform: string
@@ -41,9 +43,12 @@ export default async function AssetsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">资产记录</h1>
-        <Link href="/assets/new">
-          <Button>新增记录</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <GenerateAssetButton />
+          <Link href="/assets/new">
+            <Button variant="outline">新增记录</Button>
+          </Link>
+        </div>
       </div>
 
       <AssetList assets={serializedAssets} />

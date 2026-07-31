@@ -26,10 +26,12 @@ interface Account {
   type: "DOMESTIC" | "BANK" | "BROKERAGE" | "OVERSEAS"
   platform: string
   currency: string
+  cashBalance?: number | null
+  cashCurrency?: string | null
+  includeInProfit: boolean
   isActive: boolean
   _count?: {
     assets: number
-    incomes: number
   }
 }
 
@@ -48,6 +50,15 @@ export function AccountList({ accounts }: AccountListProps) {
   const router = useRouter()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const formatAmount = (amount: number | null | undefined, currency: string) => {
+    if (amount === null || amount === undefined) return "-"
+
+    return new Intl.NumberFormat("zh-CN", {
+      style: "currency",
+      currency,
+    }).format(amount)
+  }
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -85,6 +96,8 @@ export function AccountList({ accounts }: AccountListProps) {
               <TableHead>类型</TableHead>
               <TableHead>平台</TableHead>
               <TableHead>币种</TableHead>
+              <TableHead>现金余额</TableHead>
+              <TableHead>收益计算</TableHead>
               <TableHead>记录数</TableHead>
               <TableHead className="text-right">操作</TableHead>
             </TableRow>
@@ -97,8 +110,11 @@ export function AccountList({ accounts }: AccountListProps) {
                 <TableCell>{account.platform}</TableCell>
                 <TableCell>{account.currency}</TableCell>
                 <TableCell>
-                  资产 {account._count?.assets || 0} / 收益{" "}
-                  {account._count?.incomes || 0}
+                  {formatAmount(account.cashBalance, account.cashCurrency || account.currency)}
+                </TableCell>
+                <TableCell>{account.includeInProfit ? "参与" : "不参与"}</TableCell>
+                <TableCell>
+                  资产 {account._count?.assets || 0}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -128,7 +144,7 @@ export function AccountList({ accounts }: AccountListProps) {
           <DialogHeader>
             <DialogTitle>确认删除</DialogTitle>
             <DialogDescription>
-              删除后将同时删除该账户下的所有资产和收益记录，此操作不可恢复。
+              删除后将同时删除该账户下的所有资产、流水和持仓记录，此操作不可恢复。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

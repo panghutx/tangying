@@ -31,6 +31,9 @@ interface AccountFormProps {
     type: "DOMESTIC" | "BANK" | "BROKERAGE" | "OVERSEAS"
     platform: string
     currency: string
+    cashBalance?: number | null
+    cashCurrency?: string | null
+    includeInProfit?: boolean
     isActive?: boolean
   }
 }
@@ -48,9 +51,19 @@ export function AccountForm({ initialData }: AccountFormProps) {
     formState: { errors },
   } = useForm<AccountInput>({
     resolver: zodResolver(accountSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          cashBalance: initialData.cashBalance ?? null,
+          cashCurrency: initialData.cashCurrency || initialData.currency,
+          includeInProfit: initialData.includeInProfit ?? true,
+        }
+      : {
       type: "DOMESTIC",
       currency: "CNY",
+      cashBalance: null,
+      cashCurrency: "CNY",
+      includeInProfit: true,
     },
   })
 
@@ -153,6 +166,50 @@ export function AccountForm({ initialData }: AccountFormProps) {
               <p className="text-sm text-red-500">{errors.currency.message}</p>
             )}
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+            <div className="space-y-2">
+              <Label htmlFor="cashBalance">现金余额</Label>
+              <Input
+                id="cashBalance"
+                type="number"
+                step="0.01"
+                {...register("cashBalance", {
+                  setValueAs: (value) => value === "" ? null : Number(value),
+                })}
+                placeholder="用于自动生成资产快照"
+              />
+              {errors.cashBalance && (
+                <p className="text-sm text-red-500">{errors.cashBalance.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cashCurrency">现金币种</Label>
+              <Input
+                id="cashCurrency"
+                {...register("cashCurrency")}
+                placeholder="CNY"
+              />
+              {errors.cashCurrency && (
+                <p className="text-sm text-red-500">{errors.cashCurrency.message}</p>
+              )}
+            </div>
+          </div>
+
+          <label className="flex items-start gap-3 rounded-md border p-3">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4"
+              {...register("includeInProfit")}
+            />
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">参与收益计算</span>
+              <span className="block text-sm text-gray-500">
+                关闭后该账户仍计入总资产，但不会进入收益报表和周收益统计。
+              </span>
+            </span>
+          </label>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 

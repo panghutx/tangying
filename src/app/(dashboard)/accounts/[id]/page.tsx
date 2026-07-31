@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { AccountForm } from "@/components/accounts/account-form"
 
 export default async function EditAccountPage({
@@ -32,6 +32,9 @@ export default async function EditAccountPage({
           type: account.type,
           platform: account.platform,
           currency: account.currency,
+          cashBalance: account.cashBalance ? account.cashBalance.toNumber() : null,
+          cashCurrency: account.cashCurrency,
+          includeInProfit: account.includeInProfit,
           isActive: account.isActive,
         }}
       />

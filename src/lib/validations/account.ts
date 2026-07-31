@@ -5,6 +5,9 @@ export const accountSchema = z.object({
   type: z.enum(["DOMESTIC", "BANK", "BROKERAGE", "OVERSEAS"]),
   platform: z.string().min(1, "平台名称不能为空"),
   currency: z.string().min(1, "币种不能为空"),
+  cashBalance: z.number().min(0, "现金余额不能为负数").optional().nullable(),
+  cashCurrency: z.string().optional().nullable(),
+  includeInProfit: z.boolean().optional(),
   credentials: z.string().optional(),
 })
 

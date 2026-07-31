@@ -16,7 +16,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       include: {
         _count: {
-          select: { assets: true, incomes: true },
+          select: { assets: true },
         },
       },
     })

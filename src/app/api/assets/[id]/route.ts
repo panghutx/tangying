@@ -64,6 +64,8 @@ export async function PUT(
         amount: data.amount,
         currency: data.currency,
         note: data.note,
+        source: "MANUAL",
+        breakdown: undefined,
       },
     })
 

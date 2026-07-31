@@ -11,10 +11,14 @@ export default async function AccountsPage() {
     orderBy: { createdAt: "desc" },
     include: {
       _count: {
-        select: { assets: true, incomes: true },
+        select: { assets: true },
       },
     },
   })
+  const serializedAccounts = accounts.map((account) => ({
+    ...account,
+    cashBalance: account.cashBalance ? account.cashBalance.toNumber() : null,
+  }))
 
   return (
     <div className="space-y-6">
@@ -25,7 +29,7 @@ export default async function AccountsPage() {
         </Link>
       </div>
 
-      <AccountList accounts={accounts} />
+      <AccountList accounts={serializedAccounts} />
     </div>
   )
 }

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS "incomes";
+DROP TYPE IF EXISTS "IncomeType";

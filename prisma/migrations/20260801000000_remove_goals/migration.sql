@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS "goal_progress";
+DROP TABLE IF EXISTS "goals";
+DROP TYPE IF EXISTS "GoalStatus";
+DROP TYPE IF EXISTS "GoalPeriod";
+DROP TYPE IF EXISTS "GoalType";

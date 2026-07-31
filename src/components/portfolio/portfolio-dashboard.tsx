@@ -59,6 +59,8 @@ interface PortfolioData {
   buckets: BucketRow[]
   totalCNY: number
   totalCostCNY: number
+  holdingsValueCNY?: number
+  cashValueCNY?: number
   profitCNY: number
 }
 
@@ -205,8 +207,8 @@ export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) 
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="grid gap-4 md:grid-cols-3">
-          <Metric title="持仓市值" value={formatCNY(portfolio.totalCNY)} />
-          <Metric title="持仓成本" value={formatCNY(portfolio.totalCostCNY)} />
+          <Metric title="组合市值" value={formatCNY(portfolio.totalCNY)} />
+          <Metric title="成本基准" value={formatCNY(portfolio.totalCostCNY)} />
           <Metric
             title="持仓盈亏"
             value={`${portfolio.profitCNY >= 0 ? "+" : ""}${formatCNY(portfolio.profitCNY)}`}
@@ -218,6 +220,11 @@ export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) 
           {portfolio.rows.length === 0 ? "先新增持仓" : isRefreshing ? "刷新中..." : "刷新行情"}
         </Button>
       </div>
+      {typeof portfolio.cashValueCNY === "number" && portfolio.cashValueCNY > 0 && (
+        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          已将账户可用现金 {formatCNY(portfolio.cashValueCNY)} 计入现金资产桶。
+        </div>
+      )}
       {refreshMessage && (
         <div
           className={`rounded-lg border px-4 py-3 text-sm ${

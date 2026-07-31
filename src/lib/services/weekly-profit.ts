@@ -66,7 +66,7 @@ export async function saveWeeklyProfits(weekOffset: number = 1) {
   for (const user of users) {
     // Get all active accounts for this user
     const accounts = await prisma.financialAccount.findMany({
-      where: { userId: user.id, isActive: true },
+      where: { userId: user.id, isActive: true, includeInProfit: true },
       select: { id: true },
     })
 
@@ -134,11 +134,11 @@ export async function getWeeklyProfitsFromDB(
       weekStartDate: weekStart,
     },
     include: {
-      account: { select: { name: true } },
+      account: { select: { name: true, includeInProfit: true } },
     },
   })
 
-  return profits.map((p) => ({
+  return profits.filter((p) => p.account.includeInProfit).map((p) => ({
     accountId: p.accountId,
     accountName: p.account.name,
     currency: p.currency,

@@ -27,10 +27,17 @@ interface Asset {
   amount: number
   currency: string
   note: string | null
+  source: "MANUAL" | "AUTO_HOLDINGS" | "AUTO_MIXED"
   account: {
     name: string
     platform: string
   }
+}
+
+const sourceLabels: Record<Asset["source"], string> = {
+  MANUAL: "手动",
+  AUTO_HOLDINGS: "自动持仓",
+  AUTO_MIXED: "自动混合",
 }
 
 interface AssetListProps {
@@ -158,6 +165,7 @@ export function AssetList({ assets }: AssetListProps) {
               <TableHead>日期</TableHead>
               <TableHead>账户</TableHead>
               <TableHead>金额</TableHead>
+              <TableHead>来源</TableHead>
               <TableHead>备注</TableHead>
               <TableHead className="text-right">操作</TableHead>
             </TableRow>
@@ -165,7 +173,7 @@ export function AssetList({ assets }: AssetListProps) {
           <TableBody>
             {filteredAssets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                   {hasFilters ? "没有符合条件的记录" : "暂无资产记录"}
                 </TableCell>
               </TableRow>
@@ -179,6 +187,7 @@ export function AssetList({ assets }: AssetListProps) {
                   <TableCell className="font-medium">
                     {formatAmount(asset.amount, asset.currency)}
                   </TableCell>
+                  <TableCell>{sourceLabels[asset.source]}</TableCell>
                   <TableCell>{asset.note || "-"}</TableCell>
                   <TableCell className="text-right">
                     <Button

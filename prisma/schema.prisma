@@ -16,9 +16,7 @@ model User {
   updatedAt    DateTime           @updatedAt
   assets       Asset[]
   accounts     FinancialAccount[]
-  incomes      Income[]
   transactions Transaction[]
-  goals        Goal[]
   weeklyProfits WeeklyProfit[]
   holdings     Holding[]
 
@@ -33,12 +31,14 @@ model FinancialAccount {
   platform            String
   credentials         String?
   currency            String        @default("CNY")
+  cashBalance         Decimal?      @db.Decimal(15, 2)
+  cashCurrency        String?
+  includeInProfit     Boolean       @default(true)
   isActive            Boolean       @default(true)
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   assets              Asset[]
   user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incomes             Income[]
   syncLogs            SyncLog[]
   transactions        Transaction[]
   relatedTransactions Transaction[] @relation("TransferRelation")
@@ -107,27 +107,14 @@ model Asset {
   amount    Decimal          @db.Decimal(15, 2)
   currency  String           @default("CNY")
   note      String?
+  source    AssetSource      @default(MANUAL)
+  breakdown Json?
   createdAt DateTime         @default(now())
   account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, date])
   @@map("assets")
-}
-
-model Income {
-  id        String           @id @default(cuid())
-  accountId String
-  userId    String
-  date      DateTime         @db.Date
-  amount    Decimal          @db.Decimal(15, 2)
-  type      IncomeType
-  note      String?
-  createdAt DateTime         @default(now())
-  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("incomes")
 }
 
 model SyncLog {
@@ -160,35 +147,6 @@ model Transaction {
   @@index([accountId, date])
   @@index([userId, date])
   @@map("transactions")
-}
-
-model Goal {
-  id            String      @id @default(cuid())
-  userId        String
-  type          GoalType
-  name          String
-  targetAmount  Decimal     @db.Decimal(15, 2)
-  period        GoalPeriod?
-  deadline      DateTime?
-  status        GoalStatus  @default(ACTIVE)
-  createdAt     DateTime    @default(now())
-  completedAt   DateTime?
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  progress      GoalProgress[]
-
-  @@map("goals")
-}
-
-model GoalProgress {
-  id            String   @id @default(cuid())
-  goalId        String
-  date          DateTime @db.Date
-  currentAmount Decimal  @db.Decimal(15, 2)
-  createdAt     DateTime @default(now())
-  goal          Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
-
-  @@unique([goalId, date])
-  @@map("goal_progress")
 }
 
 model WeeklyProfit {
@@ -233,13 +191,6 @@ enum AccountType {
   OVERSEAS
 }
 
-enum IncomeType {
-  PROFIT
-  DIVIDEND
-  INTEREST
-  FEE
-}
-
 enum SyncStatus {
   SUCCESS
   FAILED
@@ -254,21 +205,10 @@ enum TransactionType {
   TRANSFER_OUT
 }
 
-enum GoalType {
-  ASSET
-  PROFIT
-}
-
-enum GoalPeriod {
-  MONTHLY
-  YEARLY
-}
-
-enum GoalStatus {
-  ACTIVE
-  COMPLETED
-  FAILED
-  ARCHIVED
+enum AssetSource {
+  MANUAL
+  AUTO_HOLDINGS
+  AUTO_MIXED
 }
 
 enum SecurityMarket {
