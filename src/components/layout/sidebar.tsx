@@ -13,6 +13,7 @@ import {
   BarChart3,
   Calendar,
   PieChart,
+  Radar,
 } from "lucide-react"
 import { useSidebar } from "@/contexts/sidebar-context"
 import { useState } from "react"
@@ -28,6 +29,7 @@ const items = [
   { href: "/accounts", label: "账户管理", icon: Wallet },
   { href: "/assets", label: "资产记录", icon: TrendingUp },
   { href: "/portfolio", label: "投资持仓", icon: PieChart },
+  { href: "/market-radar", label: "财富驾驶舱", icon: Radar },
   { href: "/transactions", label: "流水记录", icon: ArrowLeftRight },
 ]
 
