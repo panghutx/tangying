@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { HoldingForm } from "@/components/portfolio/holding-form"
 import { PortfolioDashboard } from "@/components/portfolio/portfolio-dashboard"
 import { getPortfolioHoldings } from "@/lib/services/portfolio"
+import { TradeForm } from "@/components/portfolio/trade-form"
 
 export default async function PortfolioPage() {
   const session = await auth()
@@ -35,6 +36,7 @@ export default async function PortfolioPage() {
       </div>
 
       <PortfolioDashboard portfolio={JSON.parse(JSON.stringify(portfolio))} />
+      <TradeForm accounts={accounts} />
       <HoldingForm accounts={accounts} />
     </div>
   )

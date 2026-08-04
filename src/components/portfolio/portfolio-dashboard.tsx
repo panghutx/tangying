@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { RefreshCw } from "lucide-react"
+import { Download, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -62,6 +62,7 @@ interface PortfolioData {
   holdingsValueCNY?: number
   cashValueCNY?: number
   profitCNY: number
+  performance?: { xirr: number | null; twr: number | null; tradeCount: number; snapshotCount: number }
 }
 
 export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) {
@@ -75,6 +76,8 @@ export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) 
   const [priceError, setPriceError] = useState("")
   const [isSavingEdit, setIsSavingEdit] = useState(false)
   const [isSavingPrice, setIsSavingPrice] = useState(false)
+  const holdingsCostCNY = portfolio.rows.reduce((sum, row) => sum + row.costCNY, 0)
+  const profitRate = holdingsCostCNY === 0 ? null : (portfolio.profitCNY / holdingsCostCNY) * 100
 
   async function refreshQuotes() {
     setIsRefreshing(true)
@@ -203,16 +206,71 @@ export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) 
     }
   }
 
+  function exportHoldings() {
+    const headers = [
+      "标的代码",
+      "标的名称",
+      "市场",
+      "资产桶",
+      "账户",
+      "平台",
+      "数量",
+      "总成本",
+      "成本币种",
+      "最新价格",
+      "价格币种",
+      "报价日期",
+      "市值(CNY)",
+      "盈亏(CNY)",
+      "盈亏率",
+    ]
+    const rows = portfolio.rows.map((row) => [
+      row.security.symbol,
+      row.security.name,
+      row.security.market,
+      row.security.bucket,
+      row.account.name,
+      row.account.platform,
+      row.quantity,
+      row.costAmount,
+      row.costCurrency,
+      row.latestPrice ?? "",
+      row.latestPriceCurrency,
+      row.quotedAt ? new Date(row.quotedAt).toLocaleDateString("zh-CN") : "",
+      row.marketValueCNY ?? "",
+      row.profitCNY ?? "",
+      row.profitRate === null ? "" : `${row.profitRate.toFixed(2)}%`,
+    ])
+    const csv = [headers, ...rows]
+      .map((row) => row.map((value) => csvCell(value)).join(","))
+      .join("\r\n")
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `投资持仓-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Metric title="组合市值" value={formatCNY(portfolio.totalCNY)} />
           <Metric title="成本基准" value={formatCNY(portfolio.totalCostCNY)} />
           <Metric
             title="持仓盈亏"
             value={`${portfolio.profitCNY >= 0 ? "+" : ""}${formatCNY(portfolio.profitCNY)}`}
             tone={portfolio.profitCNY >= 0 ? "red" : "green"}
+          />
+          <Metric title="资金加权年化" value={portfolio.performance?.xirr === null || portfolio.performance?.xirr === undefined ? "数据不足" : formatPercent(portfolio.performance.xirr)} tooltip="XIRR：按每笔买入、卖出和费用的实际日期，计算个人资金的年化收益率。" />
+          <Metric title="时间加权收益率" value={portfolio.performance?.twr === null || portfolio.performance?.twr === undefined ? "需要快照" : formatPercent(portfolio.performance.twr)} tooltip="TWR：根据资产快照分段计算，尽量排除资金进出时间影响。" />
+          <Metric
+            title="持仓收益率"
+            value={profitRate === null ? "暂无" : formatPercent(profitRate)}
+            tone={profitRate === null ? undefined : profitRate >= 0 ? "red" : "green"}
+            tooltip="累计收益率 = 持仓盈亏 ÷ 投资持仓成本。仅统计投资持仓，不包含账户现金；不是年化收益率。"
           />
         </div>
         <Button onClick={refreshQuotes} disabled={isRefreshing || portfolio.rows.length === 0}>
@@ -262,8 +320,12 @@ export function PortfolioDashboard({ portfolio }: { portfolio: PortfolioData }) 
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>持仓明细</CardTitle>
+          <Button variant="outline" size="sm" onClick={exportHoldings} disabled={portfolio.rows.length === 0}>
+            <Download className="h-4 w-4" />
+            导出
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -453,11 +515,13 @@ function SelectField({
   )
 }
 
-function Metric({ title, value, tone }: { title: string; value: string; tone?: "red" | "green" }) {
+function Metric({ title, value, tone, tooltip }: { title: string; value: string; tone?: "red" | "green"; tooltip?: string }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-gray-500">{title}</CardTitle>
+        <CardTitle className={`text-sm font-medium text-gray-500 ${tooltip ? "cursor-help" : ""}`} title={tooltip}>
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${tone === "red" ? "text-red-600" : tone === "green" ? "text-green-600" : ""}`}>
@@ -478,4 +542,9 @@ function formatPercent(value: number) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(value)
+}
+
+function csvCell(value: string | number) {
+  const text = String(value)
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
 }

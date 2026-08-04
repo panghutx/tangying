@@ -19,6 +19,7 @@ model User {
   transactions Transaction[]
   weeklyProfits WeeklyProfit[]
   holdings     Holding[]
+  investmentTrades InvestmentTrade[]
   marketIndicatorSnapshots MarketIndicatorSnapshot[]
   marketBriefings MarketBriefing[]
 
@@ -46,6 +47,7 @@ model FinancialAccount {
   relatedTransactions Transaction[] @relation("TransferRelation")
   weeklyProfits       WeeklyProfit[]
   holdings            Holding[]
+  investmentTrades    InvestmentTrade[]
 
   @@map("financial_accounts")
 }
@@ -61,6 +63,7 @@ model Security {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   holdings    Holding[]
+  investmentTrades InvestmentTrade[]
   priceQuotes PriceQuote[]
 
   @@unique([symbol, market])
@@ -85,6 +88,30 @@ model Holding {
   @@unique([accountId, securityId])
   @@index([userId])
   @@map("holdings")
+}
+
+model InvestmentTrade {
+  id              String        @id @default(cuid())
+  userId          String
+  accountId       String
+  securityId      String
+  type            TradeType
+  tradedAt        DateTime
+  quantity        Decimal       @db.Decimal(20, 6)
+  price           Decimal       @db.Decimal(18, 6)
+  currency        String
+  fee             Decimal       @default(0) @db.Decimal(15, 2)
+  realizedProfit  Decimal?      @db.Decimal(15, 2)
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account         FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  security        Security      @relation(fields: [securityId], references: [id], onDelete: Cascade)
+
+  @@index([userId, tradedAt])
+  @@index([accountId, securityId, tradedAt])
+  @@map("investment_trades")
 }
 
 model PriceQuote {
@@ -245,6 +272,13 @@ enum TransactionType {
   WITHDRAW
   TRANSFER_IN
   TRANSFER_OUT
+}
+
+enum TradeType {
+  BUY
+  SELL
+  DIVIDEND
+  FEE
 }
 
 enum AssetSource {

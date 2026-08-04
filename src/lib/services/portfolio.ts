@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getExchangeRates } from "@/lib/services/exchange-rate"
 import { AssetBucket } from "@prisma/client"
+import { getInvestmentPerformance } from "@/lib/services/investment-performance"
 
 export const bucketLabels: Record<AssetBucket, string> = {
   CASH: "现金",
@@ -144,6 +145,7 @@ export async function getPortfolioHoldings(userId: string) {
     }
   })
 
+  const performance = await getInvestmentPerformance(userId, totalPortfolioCNY)
   return {
     rows,
     cashRows,
@@ -153,5 +155,6 @@ export async function getPortfolioHoldings(userId: string) {
     holdingsValueCNY: totalCNY,
     cashValueCNY: totalCashCNY,
     profitCNY: totalCNY - totalCostCNY,
+    performance,
   }
 }
