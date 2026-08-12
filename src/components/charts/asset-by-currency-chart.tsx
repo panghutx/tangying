@@ -1,6 +1,6 @@
 "use client"
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 
 interface AssetByCurrencyProps {
   data: {
@@ -12,7 +12,7 @@ interface AssetByCurrencyProps {
   exchangeRates: Record<string, number>
 }
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"]
+const COLORS = ["#4b9665", "#b9cf59", "#e7ae49", "#df7666", "#8374bc", "#5a9db0"]
 
 export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyProps) {
   const formatCurrency = (value: number) => {
@@ -61,9 +61,10 @@ export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyPro
             <Tooltip
               formatter={(value) => formatCurrency(Number(value))}
               contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
+                backgroundColor: "#fbfcf8",
+                border: "1px solid #dce7d7",
+                borderRadius: "12px",
+                boxShadow: "0 10px 24px rgba(41, 75, 59, 0.12)",
               }}
             />
           </PieChart>
@@ -73,13 +74,13 @@ export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyPro
       {/* 图例 */}
       <div className="mt-4 space-y-2">
         {data.map((item, index) => (
-          <div key={item.currency} className="flex items-center justify-between">
+          <div key={item.currency} className="flex items-center justify-between border-b border-[#edf1e9] pb-2 last:border-0 last:pb-0">
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
-              <span className="text-sm">
+              <span className="text-sm font-medium text-[#45644f]">
                 {currencyNames[item.currency] || item.currency}
               </span>
               <span className="text-xs text-gray-400">
@@ -87,7 +88,7 @@ export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyPro
               </span>
             </div>
             <div className="text-right">
-              <span className="text-sm font-medium">
+                <span className="text-sm font-semibold text-[#45644f]">
                 {formatCurrency(item.amountCNY)}
               </span>
               {item.currency !== "CNY" && (
@@ -101,9 +102,9 @@ export function AssetByCurrencyChart({ data, exchangeRates }: AssetByCurrencyPro
       </div>
 
       {/* 总计 */}
-      <div className="mt-4 pt-4 border-t flex justify-between items-center">
-        <span className="font-medium">总计</span>
-        <span className="font-bold">{formatCurrency(total)}</span>
+      <div className="mt-4 flex items-center justify-between border-t border-[#dfe8da] pt-4">
+        <span className="text-sm font-medium text-[#738579]">总计</span>
+        <span className="font-semibold text-[#294b3b]">{formatCurrency(total)}</span>
       </div>
     </div>
   )

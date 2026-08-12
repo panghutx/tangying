@@ -25,10 +25,11 @@ export function NavUser() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative h-8 w-8 rounded-full flex items-center justify-center hover:bg-gray-100">
+      <DropdownMenuTrigger className="relative flex items-center gap-3 rounded-full border border-[#dbe6d6] bg-white/70 py-1.5 pl-1.5 pr-3 transition hover:bg-white">
         <Avatar className="h-8 w-8">
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="bg-[#dcefdc] font-semibold text-[#2d664d]">{initials}</AvatarFallback>
         </Avatar>
+        <span className="hidden text-sm font-medium text-[#294b3b] sm:block">{session.user.name || "我的账户"}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuGroup>

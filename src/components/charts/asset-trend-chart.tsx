@@ -41,22 +41,22 @@ export function AssetTrendChart({ data }: AssetTrendChartProps) {
   const changePercent = firstValue > 0 ? (change / firstValue) * 100 : 0
 
   return (
-    <div>
+    <div className="w-full">
       {/* 涨跌统计 */}
-      <div className="flex gap-6 mb-4 text-sm">
+      <div className="mb-4 flex flex-wrap gap-x-7 gap-y-2 text-xs">
         <div>
-          <span className="text-gray-500">期初：</span>
-          <span className="font-medium">{formatCurrency(firstValue)}</span>
+          <span className="text-[#8a9b8b]">期初 </span>
+          <span className="font-semibold text-[#45644f]">{formatCurrency(firstValue)}</span>
         </div>
         <div>
-          <span className="text-gray-500">期末：</span>
-          <span className="font-medium">{formatCurrency(lastValue)}</span>
+          <span className="text-[#8a9b8b]">期末 </span>
+          <span className="font-semibold text-[#45644f]">{formatCurrency(lastValue)}</span>
         </div>
         <div>
-          <span className="text-gray-500">涨跌：</span>
+          <span className="text-[#8a9b8b]">变化 </span>
           <span
-            className={`font-medium ${
-              change >= 0 ? "text-green-600" : "text-red-600"
+            className={`font-semibold ${
+              change >= 0 ? "text-[#3d8858]" : "text-[#c45f53]"
             }`}
           >
             {change >= 0 ? "+" : ""}
@@ -67,7 +67,7 @@ export function AssetTrendChart({ data }: AssetTrendChartProps) {
       </div>
 
       {/* 图表 */}
-      <div className="h-[300px] w-full">
+      <div className="h-[280px] w-full sm:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -79,17 +79,17 @@ export function AssetTrendChart({ data }: AssetTrendChartProps) {
                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 5" stroke="#e1e9dc" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={formatDate}
-              stroke="#9ca3af"
+              stroke="#9aaa98"
               fontSize={12}
               tickLine={false}
             />
             <YAxis
               tickFormatter={(value) => formatCurrency(value)}
-              stroke="#9ca3af"
+              stroke="#9aaa98"
               fontSize={12}
               tickLine={false}
               width={80}
@@ -98,16 +98,17 @@ export function AssetTrendChart({ data }: AssetTrendChartProps) {
               formatter={(value) => [formatCurrency(Number(value)), "总资产"]}
               labelFormatter={(label) => `日期: ${label}`}
               contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
+                backgroundColor: "#fbfcf8",
+                border: "1px solid #dce7d7",
+                borderRadius: "12px",
+                boxShadow: "0 10px 24px rgba(41, 75, 59, 0.12)",
               }}
             />
             <Area
               type="monotone"
               dataKey="total"
-              stroke="#3b82f6"
-              strokeWidth={2}
+              stroke="#3f8a60"
+              strokeWidth={2.5}
               fillOpacity={1}
               fill="url(#colorTotal)"
             />

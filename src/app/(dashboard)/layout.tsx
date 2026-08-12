@@ -17,11 +17,11 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-transparent">
         <Sidebar />
-        <div className="md:ml-64">
+        <div className="md:ml-[248px]">
           <Header />
-          <main className="p-6">{children}</main>
+          <main className="px-4 pb-10 pt-5 sm:px-6 lg:px-10">{children}</main>
         </div>
       </div>
     </SidebarProvider>
