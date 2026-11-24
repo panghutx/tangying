@@ -68,7 +68,7 @@ export function TransactionDetail({ profit, onClose }: TransactionDetailProps) {
     WITHDRAW: "text-orange-600",
     TRANSFER_IN: "text-green-600",
     TRANSFER_OUT: "text-red-600",
-    INCOME: "text-purple-600",
+    INCOME: "text-red-600",
   }
 
   return (

@@ -70,7 +70,7 @@ export function WeeklyCalendar({ initialData }: WeeklyCalendarProps) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">{month.monthName}</h2>
               <div className="text-sm">
-                <span className={month.monthTotalProfit >= 0 ? "text-green-600" : "text-red-600"}>
+                <span className={month.monthTotalProfit >= 0 ? "text-red-600" : "text-green-600"}>
                   {formatCurrency(month.monthTotalProfit)}
                 </span>
               </div>
@@ -105,8 +105,8 @@ function WeekCard({
   onToggle: () => void
   formatCurrency: (amount: number) => string
 }) {
-  const profitColor = week.totalProfit >= 0 ? "text-green-600" : "text-red-600"
-  const bgColor = week.totalProfit >= 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+  const profitColor = week.totalProfit >= 0 ? "text-red-600" : "text-green-600"
+  const bgColor = week.totalProfit >= 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"
   const hoverBg = week.hasData ? "hover:shadow-md cursor-pointer" : "opacity-50"
 
   return (
@@ -148,7 +148,7 @@ function WeekCard({
               {week.profits.map((account) => (
                 <div key={account.accountId} className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">{account.accountName}</span>
-                  <span className={account.realProfit >= 0 ? "text-green-600" : "text-red-600"}>
+                  <span className={account.realProfit >= 0 ? "text-red-600" : "text-green-600"}>
                     {formatCurrency(account.realProfit, account.currency)}
                     <span className="text-gray-400 ml-1">
                       ({account.profitRate >= 0 ? "+" : ""}{account.profitRate.toFixed(2)}%)

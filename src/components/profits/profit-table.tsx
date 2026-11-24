@@ -117,7 +117,7 @@ export function ProfitTable({ profits }: ProfitTableProps) {
                 <td className="p-3 text-right">
                   <span
                     className={
-                      profit.realProfit >= 0 ? "text-green-600" : "text-red-600"
+                      profit.realProfit >= 0 ? "text-red-600" : "text-green-600"
                     }
                   >
                     {profit.realProfit >= 0 ? "+" : ""}
@@ -127,7 +127,7 @@ export function ProfitTable({ profits }: ProfitTableProps) {
                 <td className="p-3 text-right">
                   <span
                     className={
-                      profit.profitRate >= 0 ? "text-green-600" : "text-red-600"
+                      profit.profitRate >= 0 ? "text-red-600" : "text-green-600"
                     }
                   >
                     {formatPercent(profit.profitRate)}

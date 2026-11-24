@@ -53,7 +53,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                totalProfitCNY >= 0 ? "text-green-600" : "text-red-600"
+                totalProfitCNY >= 0 ? "text-red-600" : "text-green-600"
               }`}
             >
               {totalProfitCNY < 0 ? "-" : "+"}
@@ -81,11 +81,11 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-red-600">
               {profits.filter((p) => p.realProfit > 0).length}
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              亏损: {profits.filter((p) => p.realProfit < 0).length}
+              <span className="text-green-600">亏损: {profits.filter((p) => p.realProfit < 0).length}</span>
             </p>
           </CardContent>
         </Card>

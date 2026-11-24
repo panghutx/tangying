@@ -153,7 +153,7 @@ export function AssetHistory({ profit, onClose }: AssetHistoryProps) {
                       </td>
                       <td className={`p-3 text-right text-sm ${
                         change === null ? "text-gray-400" :
-                        change > 0 ? "text-green-600" : "text-red-600"
+                        change > 0 ? "text-red-600" : "text-green-600"
                       }`}>
                         {change === null ? "-" :
                          change > 0 ? `+${formatCurrency(change)}` : formatCurrency(change)}

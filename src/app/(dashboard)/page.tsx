@@ -134,9 +134,9 @@ export default async function HomePage() {
         <div className="soft-card rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#738579]">本月收益</p>
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8f3d8] text-[#3d8858]"><ArrowUpRight className="h-4 w-4" /></span>
+            <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${monthProfitCNY >= 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}><ArrowUpRight className="h-4 w-4" /></span>
           </div>
-          <p className={`mt-5 text-2xl font-semibold tracking-[-0.03em] ${monthProfitCNY >= 0 ? "text-[#328054]" : "text-[#c45f53]"}`}>
+          <p className={`mt-5 text-2xl font-semibold tracking-[-0.03em] ${monthProfitCNY >= 0 ? "text-red-600" : "text-green-600"}`}>
             {monthProfitCNY >= 0 ? "+" : "-"}{formatCurrency(Math.abs(monthProfitCNY))}
           </p>
           <Link href="/reports" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-[#6e8b77] hover:text-[#2f7454]">查看收益详情 <ArrowRight className="h-3.5 w-3.5" /></Link>

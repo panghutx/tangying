@@ -68,7 +68,7 @@ export function ProfitCard({
       <CardContent>
         <div
           className={`text-2xl font-bold ${
-            totalProfitCNY >= 0 ? "text-green-600" : "text-red-600"
+            totalProfitCNY >= 0 ? "text-red-600" : "text-green-600"
           }`}
         >
           {totalProfitCNY >= 0 ? "+" : ""}

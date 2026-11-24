@@ -31,7 +31,7 @@ const typeLabels: Record<string, string> = {
 }
 
 const typeColors: Record<string, string> = {
-  INCOME: "text-green-600",
+  INCOME: "text-red-600",
   DEPOSIT: "text-blue-600",
   WITHDRAW: "text-orange-600",
   TRANSFER_IN: "text-blue-600",

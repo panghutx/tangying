@@ -73,7 +73,7 @@ export function CashFlowDashboard({ cashFlow }: { cashFlow: CashFlowSummary }) {
                   <Tooltip formatter={(value, name) => [formatCNY(Number(value)), cashFlowLabel(String(name))]} labelFormatter={(label) => `月份: ${label}`} />
                   <Bar dataKey="incomeCNY" fill="#2563eb" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenseCNY" fill="#f97316" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="passiveIncomeCNY" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="passiveIncomeCNY" fill="#dc2626" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -108,7 +108,7 @@ function Metric({ title, value, tone }: { title: string; value: string; tone?: "
   return (
     <div className="rounded-lg border p-4">
       <div className="text-sm text-gray-500">{title}</div>
-      <div className={`mt-2 truncate text-xl font-semibold ${tone === "good" ? "text-green-600" : tone === "bad" ? "text-red-600" : "text-gray-900"}`}>
+      <div className={`mt-2 truncate text-xl font-semibold ${tone === "good" ? "text-red-600" : tone === "bad" ? "text-green-600" : "text-gray-900"}`}>
         {value}
       </div>
     </div>
